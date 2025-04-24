@@ -57,7 +57,7 @@ const BaseLayout = () => {
             label="Settings"
             icon={<Settings />}
             collapsed={isCollapsed}
-            to="/org-settings"
+            to="/app-settings"
           />
         </nav>
       </aside>

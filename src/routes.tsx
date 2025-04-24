@@ -1,5 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 import BaseLayout from "./presentation/layouts/base-layout";
+import Home from "./presentation/pages/home";
+import BusinessCases from "./presentation/pages/business-cases";
+import GeneralSettings from "./presentation/pages/general-settings";
 
 const router = createBrowserRouter([
   {
@@ -8,11 +11,23 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <div>🏠 Home Page</div>,
+        element: <Home />,
       },
       {
-        path: "/projects",
-        element: <div>📂 Projects</div>,
+        path: "/business-cases",
+        element: (
+          <div>
+            <BusinessCases />
+          </div>
+        ),
+      },
+      {
+        path: "/app-settings",
+        element: (
+          <div>
+            <GeneralSettings />
+          </div>
+        ),
       },
     ],
   },
