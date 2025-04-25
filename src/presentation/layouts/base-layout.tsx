@@ -64,7 +64,7 @@ const BaseLayout = () => {
 
       <div className="flex flex-col flex-1">
         <header className="bg-gray-100 text-gray-900 pt-8 pl-6">
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             <h1 className="text-3xl font-semibold">Business Case</h1>
             <span className="mr-10">
               <UserProfileMenu />
