@@ -4,25 +4,12 @@ import placeholder from "../../assets/avatar.svg";
 
 import { DropdownMenu, Avatar } from "radix-ui";
 import { LogOut, User, Settings, HelpCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-interface UserProfileMenuProps {
-  user?: {
-    name: string;
-    email: string;
-    image?: string;
-  };
-  onSignOut?: () => void;
-}
-
-export function UserProfileMenu({
-  user = {
-    name: "John Doe",
-    email: "john@example.com",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  onSignOut = () => console.log("Sign out clicked"),
-}: UserProfileMenuProps) {
+export function UserProfileMenu() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const getInitials = (name: string) => {
     return name
@@ -30,6 +17,11 @@ export function UserProfileMenu({
       .map((n) => n[0])
       .join("")
       .toUpperCase();
+  };
+
+  const onSignOut = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
   };
 
   return (
