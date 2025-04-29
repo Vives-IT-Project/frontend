@@ -4,6 +4,7 @@ import Home from "./presentation/pages/home";
 import BusinessCases from "./presentation/pages/business-cases";
 import GeneralSettings from "./presentation/pages/general-settings";
 import Login from "./presentation/pages/login";
+import Register from "./presentation/pages/register";
 
 const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <Register />,
   },
 ]);
 

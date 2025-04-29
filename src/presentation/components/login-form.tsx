@@ -1,4 +1,12 @@
+import { useNavigate } from "react-router-dom";
+
 const LoginForm = () => {
+  const navigate = useNavigate();
+
+  const routeToRegister = () => {
+    navigate("/register");
+  };
+
   return (
     <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
       <form className="space-y-4">
@@ -35,6 +43,7 @@ const LoginForm = () => {
         <div className="flex justify-between gap-4 pt-2">
           <button
             type="button"
+            onClick={routeToRegister}
             className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded"
           >
             Register
