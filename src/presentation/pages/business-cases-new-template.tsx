@@ -1,6 +1,6 @@
 
 
-function NewBusinessCase() {
+function NewTemplate() {
   return (
     <div>
       <h1>New Template</h1>
@@ -10,4 +10,4 @@ function NewBusinessCase() {
     
 }
 
-export default NewBusinessCase;
+export default NewTemplate;

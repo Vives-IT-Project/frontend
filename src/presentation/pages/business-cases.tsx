@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
 
-function BusinessCasesShow({ personnes }: { personnes: Array<{ id: number; name: string; createdBy: string; createdAt: Date , statut : number}> }) {
+function BusinessCasesShow({ businessCases }: { businessCases: Array<{ id: number; name: string; createdBy: string; createdAt: Date , statut : number}> }) {
     const navigate = useNavigate();
     const routeToManageTemplate = () => {
       navigate("/manage-templates");
@@ -53,38 +53,22 @@ function BusinessCasesShow({ personnes }: { personnes: Array<{ id: number; name:
               <th className="py-3 px-4 border-b text-left">Name</th>
               <th className="py-3 px-4 border-b text-left">Created At</th>
               <th className="py-3 px-4 border-b text-left">Created By</th>
-              <th className="py-3 px-4 border-b text-left">Actions</th>
               <th className="py-3 px-4 border-b text-left">Statut</th>
+              <th className="py-3 px-4 border-b text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {personnes.map((personne) => (
-              <tr key={personne.id} className="hover:bg-gray-50">
-                <td className="py-3 px-4 border-b">{personne.name}</td>
-                <td className="py-3 px-4 border-b">{formatDate(personne.createdAt)}</td>
-                <td className="py-3 px-4 border-b">{personne.createdBy}</td>
+            {businessCases.map((businessCase) => (
+              <tr key={businessCase.id} className="hover:bg-gray-50">
+                <td className="py-3 px-4 border-b">{businessCase.name}</td>
+                <td className="py-3 px-4 border-b">{formatDate(businessCase.createdAt)}</td>
+                <td className="py-3 px-4 border-b">{businessCase.createdBy}</td>
                 <td className="py-3 px-4 border-b">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleEdit(personne.id)}
-                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(personne.id)}
-                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
-                <td className="py-3 px-4 border-b">
-                  {personne.statut === 0 ? (
+                  {businessCase.statut === 0 ? (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
                       Draft
                     </span>
-                  ) : personne.statut === 1 ? (
+                  ) : businessCase.statut === 1 ? (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                       Approved
                     </span>
@@ -94,6 +78,23 @@ function BusinessCasesShow({ personnes }: { personnes: Array<{ id: number; name:
                     </span>
                   )}
                 </td>
+                <td className="py-3 px-4 border-b">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEdit(businessCase.id)}
+                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(businessCase.id)}
+                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+                
               </tr>
             ))}
           </tbody>
@@ -102,9 +103,6 @@ function BusinessCasesShow({ personnes }: { personnes: Array<{ id: number; name:
     );
   }
   
-//   export default ManageBusinessCases;
-
-  // Exemple d'utilisation dans un parent
 function BusinessCases() {
     const businessCases = [
       {
@@ -120,12 +118,19 @@ function BusinessCases() {
         createdBy: "Marie Martin",
         createdAt: new Date("2023-06-20T14:45:00"),
         statut : 0
+      },
+      {
+        id: 3,
+        name: "Projet Zera",
+        createdBy: "Xavier Dupont",
+        createdAt: new Date("2025-06-20T14:45:00"),
+        statut : 2
       }
     ];
   
     return (
       <div className="container mx-auto p-4">
-        <BusinessCasesShow personnes={businessCases} />
+        <BusinessCasesShow businessCases={businessCases} />
       </div>
     );
   }
