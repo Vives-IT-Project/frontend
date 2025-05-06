@@ -5,6 +5,8 @@ import BusinessCases from "./presentation/pages/business-cases";
 import GeneralSettings from "./presentation/pages/general-settings";
 import Login from "./presentation/pages/login";
 import Register from "./presentation/pages/register";
+import ManageTemplate from "./presentation/pages/business-cases-manage-template";
+import NewBusinessCase from "./presentation/pages/business-cases-new-template";
 
 const router = createBrowserRouter([
   {
@@ -20,6 +22,22 @@ const router = createBrowserRouter([
         element: (
           <div>
             <BusinessCases />
+          </div>
+        ),
+      },
+      {
+        path: "/manage-templates",
+        element: (
+          <div>
+            <ManageTemplate />
+          </div>
+        ),
+      },
+      {
+        path: "/new-business-case",
+        element: (
+          <div>
+            <NewBusinessCase />
           </div>
         ),
       },
