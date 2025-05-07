@@ -5,6 +5,8 @@ import BusinessCases from "./presentation/pages/business-cases";
 import GeneralSettings from "./presentation/pages/general-settings";
 import Login from "./presentation/pages/login";
 import Register from "./presentation/pages/register";
+import Complexity from "./presentation/pages/complexity/complexity"
+import NewComplexity from "./presentation/pages/complexity/new-complexity"
 
 const router = createBrowserRouter([
   {
@@ -28,6 +30,22 @@ const router = createBrowserRouter([
         element: (
           <div>
             <GeneralSettings />
+          </div>
+        ),
+      },
+      {
+        path: "/complexity",
+        element: (
+          <div>
+            <Complexity />
+          </div>
+        ),
+      },
+      {
+        path: "/new-complexity",
+        element: (
+          <div>
+            <NewComplexity />
           </div>
         ),
       },
