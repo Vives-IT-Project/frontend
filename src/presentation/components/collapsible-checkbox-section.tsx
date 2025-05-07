@@ -16,7 +16,7 @@ interface CollapsibleCheckboxSectionProps {
   items: CheckboxItem[]
   defaultOpen?: boolean
   onItemChange?: (id: string, checked: boolean) => void
-  onManage?: () => void // Nouvelle prop pour la fonction de gestion
+  onManage?: () => void 
 }
 
 export function CollapsibleCheckboxSection({
@@ -24,7 +24,7 @@ export function CollapsibleCheckboxSection({
   items,
   defaultOpen = false,
   onItemChange,
-  onManage // On récupère la nouvelle prop
+  onManage 
 }: CollapsibleCheckboxSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
