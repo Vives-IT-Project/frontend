@@ -16,7 +16,7 @@ interface CollapsibleCheckboxSectionProps {
   items: CheckboxItem[]
   defaultOpen?: boolean
   onItemChange?: (id: string, checked: boolean) => void
-  onManage?: () => void 
+  onManage?: () => void
 }
 
 export function CollapsibleCheckboxSection({
@@ -24,7 +24,7 @@ export function CollapsibleCheckboxSection({
   items,
   defaultOpen = false,
   onItemChange,
-  onManage 
+  onManage,
 }: CollapsibleCheckboxSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
@@ -33,11 +33,15 @@ export function CollapsibleCheckboxSection({
   }
 
   const handleCheckboxChange = (id: string, checked: boolean) => {
-    onItemChange?.(id, checked)
+    if (onItemChange) {
+      onItemChange(id, checked)
+    }
   }
 
   const handleManageClick = () => {
-    onManage?.() // On appelle la fonction si elle existe
+    if (onManage) {
+      onManage()
+    }
   }
 
   return (
@@ -52,12 +56,7 @@ export function CollapsibleCheckboxSection({
       {isOpen && (
         <div className="p-4 pt-0 border-t">
           <div className="flex justify-end mb-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleManageClick} // On ajoute le handler
-              disabled={!onManage} // Désactivé si la fonction n'est pas fournie
-            >
+            <Button variant="outline" size="sm" onClick={handleManageClick} disabled={!onManage}>
               Manage
             </Button>
           </div>
@@ -78,7 +77,7 @@ export function CollapsibleCheckboxSection({
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500 col-span-2">No element</p>
+            <p className="text-sm text-gray-500 col-span-2">Aucun élément défini</p>
           )}
         </div>
       )}
