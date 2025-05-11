@@ -7,6 +7,26 @@ import { Button } from "@/components/ui/button"
 import { CollapsibleCheckboxSection } from "@/components/collapsible-checkbox-section"
 import { ManageItemsModal } from "@/components/manage-items-modal"
 
+interface ApiAnswer {
+  id: string
+  Name : string
+  Description : string
+  StrategicGoals : CheckboxItem
+  Domains : CheckboxItem
+  CostCenters : CheckboxItem
+  EvaluationTopics : CheckboxItem
+  Status : string
+}
+
+interface CheckboxItem {
+  id: string
+  label: string
+  checked: boolean
+}
+
+
+
+
 export default function NewTemplate() {
   // États initiaux pour toutes les sections
   const [templateName, setTemplateName] = useState("")
@@ -121,7 +141,7 @@ export default function NewTemplate() {
       }
 
       console.log("Données à envoyer:", templateData)
-      // await api.saveTemplate(templateData)
+      // await api.saveTemplate(templateData) //API
       alert(`Template ${isDraft ? "sauvegardé comme brouillon" : "publié"} avec succès!`)
     } catch (error) {
       console.error("Erreur lors de l'enregistrement", error)
