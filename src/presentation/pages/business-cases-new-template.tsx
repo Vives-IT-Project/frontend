@@ -73,16 +73,16 @@ interface CheckboxItem {
   checked: boolean
 }
 
-// API service pour les appels backend
+// API service for backend operations
 const apiService = {
-  // Récupérer les templates disponibles
+  // Get all templates
   async getTemplates(): Promise<Template[]> {
     try {
       // const response = await fetch('/api/templates');
       // if (!response.ok) throw new Error('Failed to fetch templates');
       // return await response.json();
 
-      // Simulation de données pour le développement
+      // Simlulation of data for development
       return [
         { id: "small-it", name: "Small IT Business Case" },
         { id: "large-it", name: "Large IT Business Case" },
@@ -95,14 +95,14 @@ const apiService = {
     }
   },
 
-  // Récupérer les détails d'un template spécifique
+  // Fetch template details
   async getTemplateDetails(templateId: string): Promise<any> {
     try {
       // const response = await fetch(`/api/templates/${templateId}`);
       // if (!response.ok) throw new Error('Failed to fetch template details');
       // return await response.json();
 
-      // Simulation de données pour le développement
+      // Data simulation for development
       return {
         name: `Template ${templateId}`,
         description: "Template description",
@@ -122,7 +122,7 @@ const apiService = {
     }
   },
 
-  // Sauvegarder un business case (brouillon ou final)
+  // Save a new business case
   async saveBusinessCase(data: any, status: "draft" | "concluded"): Promise<any> {
     try {
       // const response = await fetch('/api/business-cases', {
@@ -135,7 +135,7 @@ const apiService = {
       // if (!response.ok) throw new Error('Failed to save business case');
       // return await response.json();
 
-      // Simulation de réponse pour le développement
+      // Smulation of response for development
       return { id: "bc-" + Date.now(), ...data, status }
     } catch (error) {
       console.error("Error saving business case:", error)
@@ -143,7 +143,7 @@ const apiService = {
     }
   },
 
-  // Mettre à jour un business case existant
+  // Update an existing business case
   async updateBusinessCase(id: string, data: any): Promise<any> {
     try {
       // const response = await fetch(`/api/business-cases/${id}`, {
@@ -156,7 +156,7 @@ const apiService = {
       // if (!response.ok) throw new Error('Failed to update business case');
       // return await response.json();
 
-      // Simulation de réponse pour le développement
+      // Simulation of response for development
       return { id, ...data, updatedAt: new Date().toISOString() }
     } catch (error) {
       console.error(`Error updating business case ${id}:`, error)
@@ -166,13 +166,13 @@ const apiService = {
 }
 
 export default function CreateBusinessCase() {
-  // États pour les données du formulaire
+  // state for the selected template
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  // États pour les sections
+  // State for the selection
   const [templates, setTemplates] = useState<Template[]>([])
 
   const [actors, setActors] = useState<Actor[]>([
@@ -434,22 +434,22 @@ export default function CreateBusinessCase() {
     { id: "et-compliance", label: "Regulatory Compliance", checked: false },
   ])
 
-  // États pour les modales
+  // State for the modal
   const [activeModal, setActiveModal] = useState<string | null>(null)
   const [isTemplateOpen, setIsTemplateOpen] = useState(false)
   const [isActorsOpen, setIsActorsOpen] = useState(false)
 
-  // États pour l'édition et la suppression
+  // State for editing and deleting items
   const [editingItem, setEditingItem] = useState<{ type: string; id: string; data: any } | null>(null)
   const [deletingItem, setDeletingItem] = useState<{ type: string; id: string; name: string } | null>(null)
 
-  // États pour l'ajout de nouveaux éléments
+  // State for adding new items
   const [isAddingMilestone, setIsAddingMilestone] = useState(false)
   const [isAddingCost, setIsAddingCost] = useState(false)
   const [isAddingBenefit, setIsAddingBenefit] = useState(false)
   const [isAddingRisk, setIsAddingRisk] = useState(false)
 
-  // Nouveaux éléments temporaires
+  // State for new items
   const [newMilestone, setNewMilestone] = useState<Partial<Milestone>>({
     description: "",
     dueDate: "",
@@ -483,7 +483,7 @@ export default function CreateBusinessCase() {
     checked: true,
   })
 
-  // Charger les templates au chargement de la page
+  // Load templates on component mount
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
@@ -498,7 +498,7 @@ export default function CreateBusinessCase() {
     fetchTemplates()
   }, [])
 
-  // Effet pour charger les données du template sélectionné
+  // Load template data when a template is selected
   useEffect(() => {
     if (selectedTemplate) {
       const loadTemplateData = async () => {
@@ -506,7 +506,7 @@ export default function CreateBusinessCase() {
         try {
           const templateData = await apiService.getTemplateDetails(selectedTemplate)
 
-          // Mettre à jour les états avec les données du template
+          // update state with template data
           // Note: Dans un cas réel, vous adapteriez ces assignations selon la structure de votre API
           if (templateData.name) setName(templateData.name)
           if (templateData.description) setDescription(templateData.description)
@@ -531,7 +531,7 @@ export default function CreateBusinessCase() {
     }
   }, [selectedTemplate])
 
-  // Handlers pour les modales
+  // Handlers for the modales
   const manageActors = () => {
     setActiveModal("actors")
   }
@@ -556,7 +556,7 @@ export default function CreateBusinessCase() {
     setActiveModal(null)
   }
 
-  // Handlers pour les changements
+  // Handlers for the checkbox changes
   const handleActorChange = (id: string, checked: boolean) => {
     setActors(actors.map((actor) => (actor.id === id ? { ...actor, checked } : actor)))
   }
@@ -577,7 +577,7 @@ export default function CreateBusinessCase() {
     setEvaluationTopics(evaluationTopics.map((topic) => (topic.id === id ? { ...topic, checked } : topic)))
   }
 
-  // Handlers pour sauvegarder les modifications des modales
+  // Handlers for saving changes
   const saveActors = (updatedItems: CheckboxItem[]) => {
     setActors(updatedItems.map((item) => ({ id: item.id, name: item.label, checked: item.checked })))
   }
@@ -598,7 +598,7 @@ export default function CreateBusinessCase() {
     setEvaluationTopics(updatedItems)
   }
 
-  // Handlers pour l'édition
+  // Handlers for edition
   const handleEditClick = (type: string, id: string, data: any) => {
     setEditingItem({ type, id, data })
   }
@@ -630,7 +630,7 @@ export default function CreateBusinessCase() {
     setEditingItem(null)
   }
 
-  // Handlers pour la suppression
+  // Handlers for deletion
   const handleDeleteClick = (type: string, id: string, name: string) => {
     setDeletingItem({ type, id, name })
   }
@@ -662,7 +662,7 @@ export default function CreateBusinessCase() {
     setDeletingItem(null)
   }
 
-  // Handlers pour l'ajout
+  // Handlers for adding new items
   const handleAddMilestone = () => {
     if (!newMilestone.description || !newMilestone.dueDate) return
 
@@ -761,7 +761,7 @@ export default function CreateBusinessCase() {
     setIsAddingRisk(false)
   }
 
-  // Préparation des données pour l'API
+  // Prepare data for submission
   const prepareBusinessCaseData = () => {
     return {
       name,
@@ -779,7 +779,7 @@ export default function CreateBusinessCase() {
     }
   }
 
-  // Soumission du formulaire
+  // Save draft or conclude
   const handleSaveDraft = async () => {
     setIsLoading(true)
     try {
