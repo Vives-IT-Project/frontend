@@ -7,7 +7,7 @@ import Login from "./presentation/pages/login";
 import Register from "./presentation/pages/register";
 import ManageTemplate from "./presentation/pages/business-cases-manage-template";
 import NewTemplate from "./presentation/pages/business-cases-new-template";
-import NewBusinessCase from "./presentation/pages/new-business-cases";
+import CreateBusinessCase from "./presentation/pages/new-business-cases";
 
 const router = createBrowserRouter([
   {
@@ -38,7 +38,7 @@ const router = createBrowserRouter([
         path: "/new-business-case",
         element: (
           <div>
-            <NewBusinessCase />
+            <CreateBusinessCase />
           </div>
         ),
       },
