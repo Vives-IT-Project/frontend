@@ -53,8 +53,14 @@ export function CollapsibleCheckboxSection({
 
       {isOpen && (
         <div className="p-4 pt-0 border-t">
-          <div className="flex justify-end mb-2">
-            <Button variant="outline" size="sm" onClick={handleManageClick} disabled={!onManage}>
+          <div className="flex justify-end my-2">
+            <Button
+              className="cursor-pointer"
+              variant="outline"
+              size="sm"
+              onClick={handleManageClick}
+              disabled={!onManage}
+            >
               Manage
             </Button>
           </div>

@@ -1,25 +1,9 @@
 import { useState } from "react";
-import { AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CollapsibleCheckboxSection } from "@/components/collapsible-checkbox-section";
 import { ManageItemsModal } from "@/components/manage-items-modal";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useDomains } from "../hooks/useDomains";
 import { createDomain, callUpdateDomain, callDeleteDomain } from "@/services/domain.service";
 import { useGoals } from "../hooks/useGoals";
@@ -98,25 +82,43 @@ export default function CreateBusinessCaseTemplate() {
     setActiveModal(null);
   };
 
-  // const handleGoalChange = (id: string, checked: boolean) => {
-  //   setStrategicGoals(strategicGoals.map((goal) => (goal.id === id ? { ...goal, checked } : goal)));
-  // };
+  const handleGoalChange = (id: string, checked: boolean) => {
+    updateGoal({
+      id,
+      name: goals.find((goal) => goal.id === id)?.name || "",
+      checked,
+      idOrganization,
+    });
+  };
 
-  // const handleDomainChange = (id: string, checked: boolean) => {
-  // setDomains(domains.map((domain) => (domain.id === id ? { ...domain, checked } : domain)));
-  // };
+  const handleDomainChange = (id: string, checked: boolean) => {
+    updateDomain({
+      id,
+      name: domains.find((domain) => domain.id === id)?.name || "",
+      checked,
+      idOrganization,
+    });
+  };
 
-  // const handleCostCenterChange = (id: string, checked: boolean) => {
-  //   setCostCenters(
-  //     costCenters.map((center) => (center.id === id ? { ...center, checked } : center)),
-  //   );
-  // };
+  const handleCostCenterChange = (id: string, checked: boolean) => {
+    updateCostCenters({
+      id,
+      name: costCenters.find((costCenter) => costCenter.id === id)?.name || "",
+      checked,
+      idOrganization,
+    });
+  };
 
-  // const handleEvaluationTopicChange = (id: string, checked: boolean) => {
-  //   setEvaluationTopics(
-  //     evaluationTopics.map((topic) => (topic.id === id ? { ...topic, checked } : topic)),
-  //   );
-  // };
+  const handleEvaluationTopicChange = (id: string, checked: boolean) => {
+    updateEvaluationTopic({
+      id,
+      name: evaluationTopics.find((evaluationTopic) => evaluationTopic.id === id)?.name || "",
+      description:
+        evaluationTopics.find((evaluationTopic) => evaluationTopic.id === id)?.description || "",
+      checked,
+      idOrganization,
+    });
+  };
 
   // Handlers pour sauvegarder les modifications des modales
 
@@ -240,7 +242,7 @@ export default function CreateBusinessCaseTemplate() {
           <span className="text-gray-400">/</span>
           <span>New Template</span>
         </h1>
-        <Button onClick={handleSaveDraft} disabled={isLoading}>
+        <Button className="cursor-pointer" onClick={handleSaveDraft} disabled={isLoading}>
           {isLoading ? "Saving..." : "Save Draft"}
         </Button>
       </div>
@@ -277,10 +279,7 @@ export default function CreateBusinessCaseTemplate() {
           title="Strategic and Operational Goals"
           items={goals}
           defaultOpen={false}
-          // onItemChange={handleGoalChange}
-          onItemChange={() => {
-            console.log("Goal changed");
-          }}
+          onItemChange={handleGoalChange}
           onManage={manageGoals}
         />
 
@@ -289,10 +288,7 @@ export default function CreateBusinessCaseTemplate() {
           title="Domains"
           items={domains}
           defaultOpen={false}
-          // onItemChange={handleDomainChange}
-          onItemChange={() => {
-            console.log("Domain changed");
-          }}
+          onItemChange={handleDomainChange}
           onManage={manageDomains}
         />
 
@@ -301,10 +297,7 @@ export default function CreateBusinessCaseTemplate() {
           title="Cost Centers"
           items={costCenters}
           defaultOpen={false}
-          // onItemChange={handleCostCenterChange}
-          onItemChange={() => {
-            console.log("Cost Center changed");
-          }}
+          onItemChange={handleCostCenterChange}
           onManage={manageCostCenters}
         />
 
@@ -313,19 +306,25 @@ export default function CreateBusinessCaseTemplate() {
           title="Evaluation Topics"
           items={evaluationTopics}
           defaultOpen={false}
-          // onItemChange={handleEvaluationTopicChange}
-          onItemChange={() => {
-            console.log("Evaluation Topic changed");
-          }}
+          onItemChange={handleEvaluationTopicChange}
           onManage={manageEvaluationTopics}
         />
       </div>
 
       <div className="flex justify-end mt-6 gap-3">
-        <Button variant="secondary" onClick={handleSaveDraft} disabled={isLoading}>
+        <Button
+          variant="secondary"
+          className="cursor-pointer"
+          onClick={handleSaveDraft}
+          disabled={isLoading}
+        >
           {isLoading ? "Saving..." : "Save Draft"}
         </Button>
-        <Button onClick={handleConclude} disabled={isLoading}>
+        <Button
+          onClick={handleConclude}
+          disabled={isLoading}
+          className="bg-blue-600 text-white cursor-pointer"
+        >
           {isLoading ? "Processing..." : "Conclude"}
         </Button>
       </div>
