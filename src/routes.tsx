@@ -5,6 +5,7 @@ import BusinessCases from "./presentation/pages/business-cases";
 import GeneralSettings from "./presentation/pages/general-settings";
 import Login from "./presentation/pages/login";
 import Register from "./presentation/pages/register";
+import AuditPage from "./presentation/pages/audit";
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
             <GeneralSettings />
           </div>
         ),
+      },
+      {
+        path: "/audit",
+        element: <AuditPage />,
       },
     ],
   },
