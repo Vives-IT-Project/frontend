@@ -1,11 +1,8 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, Check, X, Edit, Trash2, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CollapsibleCheckboxSection } from "@/components/collapsible-checkbox-section";
 import { ManageItemsModal } from "@/components/manage-items-modal";
 import {
@@ -26,7 +23,14 @@ import {
 import api from "@/services/axios";
 import { useDomains } from "../hooks/useDomains";
 import { createDomain, callUpdateDomain, callDeleteDomain } from "@/services/domain.service";
-import { set } from "date-fns";
+import { useGoals } from "../hooks/useGoals";
+import { callDeleteGoal, callUpdateGoal, createGoal } from "@/services/goals.service";
+import { useCostCenter } from "../hooks/useCostCenters";
+import {
+  callDeleteCostCenter,
+  callUpdateCostCenter,
+  createCostCenter,
+} from "@/services/cost-center.service";
 
 // Types
 interface Template {
@@ -430,17 +434,19 @@ export default function CreateBusinessCase() {
   }, []);
 
   const [selectedDomains, setSelectedDomains] = useState<CheckboxItem[]>([]);
-
   const { domains, loading, addDomain, refetch, updateDomain } = useDomains();
 
-  const [costCenters, setCostCenters] = useState<CheckboxItem[]>([
-    { id: "cc-rd", label: "Research & Development", checked: true },
-    { id: "cc-marketing", label: "Marketing", checked: false },
-    { id: "cc-sales", label: "Sales", checked: true },
-    { id: "cc-it", label: "Information Technology", checked: false },
-    { id: "cc-hr", label: "Human Resources", checked: true },
-    { id: "cc-finance", label: "Finance", checked: false },
-  ]);
+  const [selectedGoals, setSelectedGoals] = useState<CheckboxItem[]>([]);
+  const { goals, loading: loadingGoals, addGoal, refetch: refetchGoals, updateGoal } = useGoals();
+
+  const [selectedCostCenters, setSelectedCostCenters] = useState<CheckboxItem[]>([]);
+  const {
+    costCenters,
+    loading: loadingCostCenters,
+    addCostCenter,
+    refetch: refetchCostCenters,
+    updateCostCenters,
+  } = useCostCenter();
 
   const [evaluationTopics, setEvaluationTopics] = useState<CheckboxItem[]>([
     { id: "et-roi", label: "Return on Investment (ROI)", checked: true },
@@ -524,7 +530,8 @@ export default function CreateBusinessCase() {
           if (templateData.risks) setRisks(templateData.risks);
           if (templateData.strategicGoals) setStrategicGoals(templateData.strategicGoals);
           // if (templateData.domains) setDomains(templateData.domains);
-          if (templateData.costCenters) setCostCenters(templateData.costCenters);
+          // if (templateData.costCenters) setCostCenters(templateData.costCenters);
+
           if (templateData.evaluationTopics) setEvaluationTopics(templateData.evaluationTopics);
         } catch (error) {
           console.error(`Error loading template data for ${selectedTemplate}:`, error);
@@ -576,11 +583,11 @@ export default function CreateBusinessCase() {
   // setDomains(domains.map((domain) => (domain.id === id ? { ...domain, checked } : domain)));
   // };
 
-  const handleCostCenterChange = (id: string, checked: boolean) => {
-    setCostCenters(
-      costCenters.map((center) => (center.id === id ? { ...center, checked } : center)),
-    );
-  };
+  // const handleCostCenterChange = (id: string, checked: boolean) => {
+  //   setCostCenters(
+  //     costCenters.map((center) => (center.id === id ? { ...center, checked } : center)),
+  //   );
+  // };
 
   const handleEvaluationTopicChange = (id: string, checked: boolean) => {
     setEvaluationTopics(
@@ -595,23 +602,55 @@ export default function CreateBusinessCase() {
     );
   };
 
-  const saveGoals = async (newGoal: string) => {
-    const data = {
-      name: newGoal,
-      idOrganization,
-    };
-    const response = await api.post("/goals", data);
+  const saveCostCenters = async (newCostCenter: string) => {
+    const costCenter = await createCostCenter({ name: newCostCenter, idOrganization });
+    addCostCenter({
+      id: costCenter.id,
+      name: newCostCenter,
+      checked: false,
+      idOrganization: costCenter.idOrganization,
+    });
+  };
 
-    if (response.status === 201) {
-      const newItem = {
-        id: response.data.id,
-        label: newGoal,
-        checked: false,
-      };
-      setStrategicGoals([...strategicGoals, newItem]);
-    } else {
-      console.error("Error creating new goal:", response.statusText);
-    }
+  const updateCostCenter = async (id: string, name: string) => {
+    const costCenter = await callUpdateCostCenter(id, name);
+    updateCostCenters({
+      id: costCenter.id,
+      name: costCenter.name,
+      checked: false,
+      idOrganization: costCenter.idOrganization,
+    });
+  };
+
+  const deleteCostCenter = async (id: string) => {
+    await callDeleteCostCenter(id);
+    refetchCostCenters();
+  };
+
+  const saveGoals = async (newGoal: string) => {
+    const goal = await createGoal({ name: newGoal, idOrganization });
+    addGoal({
+      id: goal.id,
+      name: newGoal,
+      checked: false,
+      idOrganization: goal.idOrganization,
+    });
+  };
+
+  const updateGoals = async (id: string, name: string) => {
+    const goal = await callUpdateGoal(id, name);
+    updateGoal({
+      id: goal.id,
+      name: goal.name,
+      checked: false,
+      idOrganization: goal.idOrganization,
+    });
+  };
+
+  const deleteGoal = async (id: string) => {
+    console.log("Deleting goal with ID:", id);
+    await callDeleteGoal(id);
+    refetchGoals();
   };
 
   const saveDomains = async (newDomain: string) => {
@@ -640,9 +679,9 @@ export default function CreateBusinessCase() {
     refetch();
   };
 
-  const saveCostCenters = (updatedItems: CheckboxItem[]) => {
-    setCostCenters(updatedItems);
-  };
+  // const saveCostCenters = (updatedItems: CheckboxItem[]) => {
+  //   setCostCenters(updatedItems);
+  // };
 
   const saveEvaluationTopics = (updatedItems: CheckboxItem[]) => {
     setEvaluationTopics(updatedItems);
@@ -1673,7 +1712,7 @@ export default function CreateBusinessCase() {
         {/* Strategic and Operational Goals */}
         <CollapsibleCheckboxSection
           title="Strategic and Operational Goals"
-          items={strategicGoals}
+          items={goals}
           defaultOpen={false}
           onItemChange={handleGoalChange}
           onManage={manageGoals}
@@ -1696,7 +1735,10 @@ export default function CreateBusinessCase() {
           title="Cost Centers"
           items={costCenters}
           defaultOpen={false}
-          onItemChange={handleCostCenterChange}
+          // onItemChange={handleCostCenterChange}
+          onItemChange={() => {
+            console.log("Cost Center changed");
+          }}
           onManage={manageCostCenters}
         />
 
@@ -1730,10 +1772,12 @@ export default function CreateBusinessCase() {
 
       <ManageItemsModal
         title="Strategic And Operational Goals"
-        items={strategicGoals}
+        items={goals}
         isOpen={activeModal === "goals"}
         onClose={closeModal}
         onSave={saveGoals}
+        onDelete={deleteGoal}
+        onUpdate={updateGoals}
       />
 
       <ManageItemsModal
@@ -1752,6 +1796,8 @@ export default function CreateBusinessCase() {
         isOpen={activeModal === "costCenters"}
         onClose={closeModal}
         onSave={saveCostCenters}
+        onDelete={deleteCostCenter}
+        onUpdate={updateCostCenter}
       />
 
       <ManageItemsModal

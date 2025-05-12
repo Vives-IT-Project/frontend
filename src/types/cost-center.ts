@@ -1,4 +1,4 @@
-export type Domain = {
+export type CostCenter = {
   id?: string;
   name: string;
   idOrganization: string;
