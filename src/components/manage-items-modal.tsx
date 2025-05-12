@@ -64,20 +64,6 @@ export function ManageItemsModal({
     }
   };
 
-  // const handleCreateNew = async (route: string, data: unknown) => {
-  //   setIsCreating(true);
-
-  // };
-
-  const handleSaveNew = () => {
-    if (newItemName.trim()) {
-      const newId = `item-${Date.now()}`;
-      setItems([...items, { id: newId, name: newItemName }]);
-      setNewItemName("");
-      setIsCreating(false);
-    }
-  };
-
   const handleCancel = () => {
     setIsCreating(false);
     setNewItemName("");
@@ -86,8 +72,10 @@ export function ManageItemsModal({
   };
 
   const handleSave = () => {
-    onSave(newItemName);
-    onClose();
+    if (newItemName.trim()) {
+      onSave(newItemName);
+      onClose();
+    }
   };
 
   return (
@@ -121,27 +109,6 @@ export function ManageItemsModal({
 
           {/* Table Body */}
           <div className="border rounded-b-md divide-y max-h-[50vh] overflow-y-auto">
-            {isCreating && (
-              <div className="grid grid-cols-2 items-center p-2 bg-gray-50">
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={newItemName}
-                    onChange={(e) => setNewItemName(e.target.value)}
-                    placeholder="New item name"
-                    className="w-full"
-                  />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button size="sm" onClick={() => setIsCreating(false)} variant="outline">
-                    Cancel
-                  </Button>
-                  <Button size="sm" onClick={handleSaveNew} disabled={!newItemName.trim()}>
-                    Save
-                  </Button>
-                </div>
-              </div>
-            )}
-
             {editingItem && (
               <div className="flex p-2 bg-gray-50 gap-4 items-center ">
                 <div className="flex items-center w-full">
