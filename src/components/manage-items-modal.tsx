@@ -1,101 +1,125 @@
-"use client"
+import { useEffect, useState } from "react";
+import { Trash2, Edit } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-import { useState } from "react"
-import { Trash2, Edit } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-
-interface CheckboxItem {
-  id: string
-  label: string
-  checked: boolean
+interface ModalItem {
+  id?: string;
+  name: string;
 }
 
 interface ManageItemsModalProps {
-  title: string
-  items: CheckboxItem[]
-  isOpen: boolean
-  onClose: () => void
-  onSave: (items: CheckboxItem[]) => void
+  title: string;
+  items: ModalItem[];
+  isOpen: boolean;
+  onClose: () => void;
+  // onSave: (items: CheckboxItem[]) => void;
+  onSave: (newItemName: string) => void;
+  onUpdate: (id: string, name: string) => void;
+  onDelete: (id: string) => void;
 }
 
-export function ManageItemsModal({ title, items: initialItems, isOpen, onClose, onSave }: ManageItemsModalProps) {
-  const [items, setItems] = useState<CheckboxItem[]>([...initialItems])
-  const [isCreating, setIsCreating] = useState(false)
-  const [newItemName, setNewItemName] = useState("")
-  const [editingItem, setEditingItem] = useState<{ id: string; name: string } | null>(null)
+export function ManageItemsModal({
+  title,
+  items: initialItems,
+  isOpen,
+  onClose,
+  onSave,
+  onUpdate,
+  onDelete,
+}: ManageItemsModalProps) {
+  const [items, setItems] = useState<ModalItem[]>([...initialItems]);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newItemName, setNewItemName] = useState("");
+  const [editingItem, setEditingItem] = useState<{ id: string; name: string } | null>(null);
 
-  // Réinitialiser l'état lorsque la modale s'ouvre avec de nouveaux éléments
-  useState(() => {
+  useEffect(() => {
     if (isOpen) {
-      setItems([...initialItems])
-      setIsCreating(false)
-      setNewItemName("")
-      setEditingItem(null)
+      setItems([...initialItems]);
+      setIsCreating(false);
+      setNewItemName("");
+      setEditingItem(null);
     }
-  })
+  }, [isOpen, initialItems, title]);
 
   const handleDeleteItem = (id: string) => {
-    setItems(items.filter((item) => item.id !== id))
-  }
+    setItems(items.filter((item) => item.id !== id));
+    onDelete(id);
+  };
 
   const handleEditItem = (id: string, name: string) => {
-    setEditingItem({ id, name })
-  }
+    setEditingItem({ id, name });
+  };
 
   const handleSaveEdit = () => {
     if (editingItem) {
-      setItems(items.map((item) => (item.id === editingItem.id ? { ...item, label: editingItem.name } : item)))
-      setEditingItem(null)
+      setItems(
+        items.map((item) =>
+          item.id === editingItem.id ? { ...item, name: editingItem.name } : item,
+        ),
+      );
+      onUpdate(editingItem.id, editingItem.name);
+      setEditingItem(null);
     }
-  }
+  };
 
-  const handleCreateNew = () => {
-    setIsCreating(true)
-  }
+  // const handleCreateNew = async (route: string, data: unknown) => {
+  //   setIsCreating(true);
+
+  // };
 
   const handleSaveNew = () => {
     if (newItemName.trim()) {
-      const newId = `item-${Date.now()}`
-      setItems([...items, { id: newId, label: newItemName, checked: false }])
-      setNewItemName("")
-      setIsCreating(false)
+      const newId = `item-${Date.now()}`;
+      setItems([...items, { id: newId, name: newItemName }]);
+      setNewItemName("");
+      setIsCreating(false);
     }
-  }
+  };
 
   const handleCancel = () => {
-    onClose()
-  }
+    setIsCreating(false);
+    setNewItemName("");
+    setEditingItem(null);
+    onClose();
+  };
 
   const handleSave = () => {
-    onSave(items)
-    onClose()
-  }
+    onSave(newItemName);
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle>{title}</DialogTitle>
-          <div className="flex gap-2">
+          <DialogTitle>Manage {title}</DialogTitle>
+          <div className="flex gap-2 pt-4">
             <Button variant="destructive" size="sm" onClick={handleCancel}>
               Cancel
             </Button>
-            <Button variant="default" size="sm" onClick={handleCreateNew}>
+            <Button variant="default" size="sm" onClick={handleSave}>
               Create New
             </Button>
           </div>
         </DialogHeader>
 
+        <Input
+          id="newItemName"
+          className="w-full"
+          value={newItemName}
+          onChange={(e) => setNewItemName(e.target.value)}
+        />
+
         <div className="mt-4">
-          {/* En-tête du tableau */}
+          {/* Table Header */}
           <div className="grid grid-cols-2 font-medium bg-gray-100 p-2 rounded-t-md">
             <div>Name</div>
             <div className="text-right">Actions</div>
           </div>
 
-          {/* Corps du tableau */}
+          {/* Table Body */}
           <div className="border rounded-b-md divide-y max-h-[50vh] overflow-y-auto">
             {isCreating && (
               <div className="grid grid-cols-2 items-center p-2 bg-gray-50">
@@ -119,8 +143,8 @@ export function ManageItemsModal({ title, items: initialItems, isOpen, onClose, 
             )}
 
             {editingItem && (
-              <div className="grid grid-cols-2 items-center p-2 bg-gray-50">
-                <div className="flex items-center gap-2">
+              <div className="flex p-2 bg-gray-50 gap-4 items-center ">
+                <div className="flex items-center w-full">
                   <Input
                     value={editingItem.name}
                     onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
@@ -140,15 +164,15 @@ export function ManageItemsModal({ title, items: initialItems, isOpen, onClose, 
 
             {items.map((item) => (
               <div key={item.id} className="grid grid-cols-2 items-center p-2">
-                <div>{item.label}</div>
+                <div>{item.name}</div>
                 <div className="flex justify-end gap-2">
-                  <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(item.id)}>
+                  <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(item.id!)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleEditItem(item.id, item.label)}
+                    onClick={() => handleEditItem(item.id!, item.name)}
                     disabled={!!editingItem || isCreating}
                   >
                     <Edit className="h-4 w-4" />
@@ -160,5 +184,5 @@ export function ManageItemsModal({ title, items: initialItems, isOpen, onClose, 
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

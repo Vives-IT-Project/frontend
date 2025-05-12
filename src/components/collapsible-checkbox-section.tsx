@@ -1,22 +1,20 @@
-"use client"
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
-import { useState } from "react"
-import { ChevronDown, ChevronUp } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-
-interface CheckboxItem {
-  id: string
-  label: string
-  checked: boolean
+export interface CheckboxItem {
+  id?: string;
+  name: string;
+  checked: boolean;
 }
 
 interface CollapsibleCheckboxSectionProps {
-  title: string
-  items: CheckboxItem[]
-  defaultOpen?: boolean
-  onItemChange?: (id: string, checked: boolean) => void
-  onManage?: () => void
+  title: string;
+  items: CheckboxItem[];
+  defaultOpen?: boolean;
+  onItemChange?: (id: string, checked: boolean) => void;
+  onManage?: () => void;
 }
 
 export function CollapsibleCheckboxSection({
@@ -26,23 +24,23 @@ export function CollapsibleCheckboxSection({
   onItemChange,
   onManage,
 }: CollapsibleCheckboxSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen)
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const toggleSection = () => {
-    setIsOpen(!isOpen)
-  }
+    setIsOpen(!isOpen);
+  };
 
   const handleCheckboxChange = (id: string, checked: boolean) => {
     if (onItemChange) {
-      onItemChange(id, checked)
+      onItemChange(id, checked);
     }
-  }
+  };
 
   const handleManageClick = () => {
     if (onManage) {
-      onManage()
+      onManage();
     }
-  }
+  };
 
   return (
     <div className="border rounded-md">
@@ -67,20 +65,24 @@ export function CollapsibleCheckboxSection({
                   <Checkbox
                     id={item.id}
                     checked={item.checked}
-                    onCheckedChange={(checked) => handleCheckboxChange(item.id, checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      handleCheckboxChange(item.id!, checked as boolean)
+                    }
                     className={item.checked ? "bg-indigo-600 border-indigo-600" : ""}
                   />
                   <label htmlFor={item.id} className="text-sm">
-                    {item.label}
+                    {item.name}
                   </label>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500 col-span-2">Aucun élément défini</p>
+            <p className="text-sm text-gray-500 col-span-2">
+              No items available. Please add items to this section.
+            </p>
           )}
         </div>
       )}
     </div>
-  )
+  );
 }

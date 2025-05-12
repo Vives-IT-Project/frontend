@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { ChevronDown, ChevronUp, Check, X, Edit, Trash2, AlertTriangle } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { CollapsibleCheckboxSection } from "@/components/collapsible-checkbox-section"
-import { ManageItemsModal } from "@/components/manage-items-modal"
+import { useState, useEffect } from "react";
+import { ChevronDown, ChevronUp, Check, X, Edit, Trash2, AlertTriangle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { CollapsibleCheckboxSection } from "@/components/collapsible-checkbox-section";
+import { ManageItemsModal } from "@/components/manage-items-modal";
 import {
   Dialog,
   DialogContent,
@@ -15,62 +15,72 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import api from "@/services/axios";
+import { useDomains } from "../hooks/useDomains";
+import { createDomain, callUpdateDomain, callDeleteDomain } from "@/services/domain.service";
+import { set } from "date-fns";
 
 // Types
 interface Template {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 interface Actor {
-  id: string
-  name: string
-  checked: boolean
+  id: string;
+  name: string;
+  checked: boolean;
 }
 
 interface Milestone {
-  id: string
-  description: string
-  dueDate: string
-  priority: "Low" | "Medium" | "High" | "Urgent"
-  status: "Not Started" | "In Progress" | "Completed"
-  checked: boolean
+  id: string;
+  description: string;
+  dueDate: string;
+  priority: "Low" | "Medium" | "High" | "Urgent";
+  status: "Not Started" | "In Progress" | "Completed";
+  checked: boolean;
 }
 
 interface Cost {
-  id: string
-  description: string
-  date: string
-  period: string
-  amount: number
-  type: "CAPEX" | "OPEX"
-  actualValue: boolean
-  checked: boolean
+  id: string;
+  description: string;
+  date: string;
+  period: string;
+  amount: number;
+  type: "CAPEX" | "OPEX";
+  actualValue: boolean;
+  checked: boolean;
 }
 
 interface Benefit {
-  id: string
-  description: string
-  amount: number | string
-  type: "Qualitative" | "Quantitative"
-  actualValue: boolean
-  checked: boolean
+  id: string;
+  description: string;
+  amount: number | string;
+  type: "Qualitative" | "Quantitative";
+  actualValue: boolean;
+  checked: boolean;
 }
 
 interface Risk {
-  id: string
-  description: string
-  impact: "Low" | "Medium" | "High"
-  probability: "Low" | "Medium" | "High"
-  checked: boolean
+  id: string;
+  description: string;
+  impact: "Low" | "Medium" | "High";
+  probability: "Low" | "Medium" | "High";
+  checked: boolean;
 }
 
 interface CheckboxItem {
-  id: string
-  label: string
-  checked: boolean
+  id: string;
+  label: string;
+  checked: boolean;
 }
 
 // API service pour les appels backend
@@ -88,10 +98,10 @@ const apiService = {
         { id: "large-it", name: "Large IT Business Case" },
         { id: "small-hr", name: "Small HR Business Case" },
         { id: "large-admin", name: "Large Administrative Business Case" },
-      ]
+      ];
     } catch (error) {
-      console.error("Error fetching templates:", error)
-      throw error
+      console.error("Error fetching templates:", error);
+      throw error;
     }
   },
 
@@ -115,10 +125,10 @@ const apiService = {
         domains: [],
         costCenters: [],
         evaluationTopics: [],
-      }
+      };
     } catch (error) {
-      console.error(`Error fetching template details for ${templateId}:`, error)
-      throw error
+      console.error(`Error fetching template details for ${templateId}:`, error);
+      throw error;
     }
   },
 
@@ -136,10 +146,10 @@ const apiService = {
       // return await response.json();
 
       // Simulation de réponse pour le développement
-      return { id: "bc-" + Date.now(), ...data, status }
+      return { id: "bc-" + Date.now(), ...data, status };
     } catch (error) {
-      console.error("Error saving business case:", error)
-      throw error
+      console.error("Error saving business case:", error);
+      throw error;
     }
   },
 
@@ -157,23 +167,25 @@ const apiService = {
       // return await response.json();
 
       // Simulation de réponse pour le développement
-      return { id, ...data, updatedAt: new Date().toISOString() }
+      return { id, ...data, updatedAt: new Date().toISOString() };
     } catch (error) {
-      console.error(`Error updating business case ${id}:`, error)
-      throw error
+      console.error(`Error updating business case ${id}:`, error);
+      throw error;
     }
   },
-}
+};
 
 export default function CreateBusinessCase() {
   // États pour les données du formulaire
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const idOrganization = "56336201-b466-4168-84ca-382a699cce63";
 
   // États pour les sections
-  const [templates, setTemplates] = useState<Template[]>([])
+  // const [templates, setTemplates] = useState<Template[]>([]);
 
   const [actors, setActors] = useState<Actor[]>([
     { id: "john-doe", name: "John Doe", checked: true },
@@ -182,7 +194,7 @@ export default function CreateBusinessCase() {
     { id: "atom-squad", name: "Atom Squad", checked: true },
     { id: "city-hall", name: "City Hall", checked: false },
     { id: "omega-squad", name: "Omega Squad", checked: false },
-  ])
+  ]);
 
   const [milestones, setMilestones] = useState<Milestone[]>([
     {
@@ -233,7 +245,7 @@ export default function CreateBusinessCase() {
       status: "Not Started",
       checked: true,
     },
-  ])
+  ]);
 
   const [costs, setCosts] = useState<Cost[]>([
     {
@@ -296,7 +308,7 @@ export default function CreateBusinessCase() {
       actualValue: true,
       checked: true,
     },
-  ])
+  ]);
 
   const [benefits, setBenefits] = useState<Benefit[]>([
     {
@@ -347,7 +359,7 @@ export default function CreateBusinessCase() {
       actualValue: true,
       checked: true,
     },
-  ])
+  ]);
 
   const [risks, setRisks] = useState<Risk[]>([
     {
@@ -392,29 +404,34 @@ export default function CreateBusinessCase() {
       probability: "Low",
       checked: true,
     },
-  ])
+  ]);
 
-  const [strategicGoals, setStrategicGoals] = useState<CheckboxItem[]>([
-    { id: "reduce-costs", label: "Reduce Operational Costs", checked: true },
-    { id: "enhance-experience", label: "Enhance Customer Experience", checked: false },
-    { id: "improve-efficiency", label: "Improve Efficiency & Productivity", checked: true },
-    { id: "expand-market", label: "Expand Market Share", checked: true },
-    { id: "ensure-compliance", label: "Ensure Regulatory Compliance", checked: false },
-    { id: "accelerate-digital", label: "Accelerate Digital Transformation", checked: false },
-    { id: "optimize-supply", label: "Optimize Supply Chain", checked: true },
-    { id: "boost-engagement", label: "Boost Employee Engagement", checked: false },
-  ])
+  const [strategicGoals, setStrategicGoals] = useState<CheckboxItem[]>([]);
 
-  const [domains, setDomains] = useState<CheckboxItem[]>([
-    { id: "finance", label: "Finance & Accounting", checked: true },
-    { id: "hr", label: "Human Resources", checked: false },
-    { id: "it", label: "Information Technology", checked: true },
-    { id: "marketing", label: "Marketing & Sales", checked: true },
-    { id: "operations", label: "Operations & Logistics", checked: false },
-    { id: "legal", label: "Legal & Compliance", checked: false },
-    { id: "research", label: "Research & Development", checked: true },
-    { id: "support", label: "Customer Support & Service", checked: false },
-  ])
+  useEffect(() => {
+    const fetchGoals = async () => {
+      try {
+        const goals = await api.get("/goals");
+        if (!goals.data) {
+          console.error("No goals data found");
+          return;
+        }
+        const goalsData = goals.data.map((goal: any) => ({
+          id: goal.id,
+          label: goal.name,
+          checked: false,
+        }));
+        setStrategicGoals(goalsData);
+      } catch (error) {
+        console.error("Error fetching goals:", error);
+      }
+    };
+    fetchGoals();
+  }, []);
+
+  const [selectedDomains, setSelectedDomains] = useState<CheckboxItem[]>([]);
+
+  const { domains, loading, addDomain, refetch, updateDomain } = useDomains();
 
   const [costCenters, setCostCenters] = useState<CheckboxItem[]>([
     { id: "cc-rd", label: "Research & Development", checked: true },
@@ -423,7 +440,7 @@ export default function CreateBusinessCase() {
     { id: "cc-it", label: "Information Technology", checked: false },
     { id: "cc-hr", label: "Human Resources", checked: true },
     { id: "cc-finance", label: "Finance", checked: false },
-  ])
+  ]);
 
   const [evaluationTopics, setEvaluationTopics] = useState<CheckboxItem[]>([
     { id: "et-roi", label: "Return on Investment (ROI)", checked: true },
@@ -432,22 +449,27 @@ export default function CreateBusinessCase() {
     { id: "et-feasibility", label: "Technical Feasibility", checked: false },
     { id: "et-sustainability", label: "Sustainability", checked: true },
     { id: "et-compliance", label: "Regulatory Compliance", checked: false },
-  ])
+  ]);
 
   // États pour les modales
-  const [activeModal, setActiveModal] = useState<string | null>(null)
-  const [isTemplateOpen, setIsTemplateOpen] = useState(false)
-  const [isActorsOpen, setIsActorsOpen] = useState(false)
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [isActorsOpen, setIsActorsOpen] = useState(false);
 
   // États pour l'édition et la suppression
-  const [editingItem, setEditingItem] = useState<{ type: string; id: string; data: any } | null>(null)
-  const [deletingItem, setDeletingItem] = useState<{ type: string; id: string; name: string } | null>(null)
+  const [editingItem, setEditingItem] = useState<{ type: string; id: string; data: any } | null>(
+    null,
+  );
+  const [deletingItem, setDeletingItem] = useState<{
+    type: string;
+    id: string;
+    name: string;
+  } | null>(null);
 
   // États pour l'ajout de nouveaux éléments
-  const [isAddingMilestone, setIsAddingMilestone] = useState(false)
-  const [isAddingCost, setIsAddingCost] = useState(false)
-  const [isAddingBenefit, setIsAddingBenefit] = useState(false)
-  const [isAddingRisk, setIsAddingRisk] = useState(false)
+  const [isAddingMilestone, setIsAddingMilestone] = useState(false);
+  const [isAddingCost, setIsAddingCost] = useState(false);
+  const [isAddingBenefit, setIsAddingBenefit] = useState(false);
+  const [isAddingRisk, setIsAddingRisk] = useState(false);
 
   // Nouveaux éléments temporaires
   const [newMilestone, setNewMilestone] = useState<Partial<Milestone>>({
@@ -456,7 +478,7 @@ export default function CreateBusinessCase() {
     priority: "Medium",
     status: "Not Started",
     checked: true,
-  })
+  });
 
   const [newCost, setNewCost] = useState<Partial<Cost>>({
     description: "",
@@ -466,7 +488,7 @@ export default function CreateBusinessCase() {
     type: "CAPEX",
     actualValue: false,
     checked: true,
-  })
+  });
 
   const [newBenefit, setNewBenefit] = useState<Partial<Benefit>>({
     description: "",
@@ -474,199 +496,227 @@ export default function CreateBusinessCase() {
     type: "Quantitative",
     actualValue: false,
     checked: true,
-  })
+  });
 
   const [newRisk, setNewRisk] = useState<Partial<Risk>>({
     description: "",
     impact: "Medium",
     probability: "Medium",
     checked: true,
-  })
-
-  // Charger les templates au chargement de la page
-  useEffect(() => {
-    const fetchTemplates = async () => {
-      try {
-        const templatesData = await apiService.getTemplates()
-        setTemplates(templatesData)
-      } catch (error) {
-        console.error("Failed to load templates:", error)
-        // Gérer l'erreur (afficher un message, etc.)
-      }
-    }
-
-    fetchTemplates()
-  }, [])
+  });
 
   // Effet pour charger les données du template sélectionné
   useEffect(() => {
     if (selectedTemplate) {
       const loadTemplateData = async () => {
-        setIsLoading(true)
+        setIsLoading(true);
         try {
-          const templateData = await apiService.getTemplateDetails(selectedTemplate)
+          const templateData = await apiService.getTemplateDetails(selectedTemplate);
 
           // Mettre à jour les états avec les données du template
           // Note: Dans un cas réel, vous adapteriez ces assignations selon la structure de votre API
-          if (templateData.name) setName(templateData.name)
-          if (templateData.description) setDescription(templateData.description)
-          if (templateData.actors) setActors(templateData.actors)
-          if (templateData.milestones) setMilestones(templateData.milestones)
-          if (templateData.costs) setCosts(templateData.costs)
-          if (templateData.benefits) setBenefits(templateData.benefits)
-          if (templateData.risks) setRisks(templateData.risks)
-          if (templateData.strategicGoals) setStrategicGoals(templateData.strategicGoals)
-          if (templateData.domains) setDomains(templateData.domains)
-          if (templateData.costCenters) setCostCenters(templateData.costCenters)
-          if (templateData.evaluationTopics) setEvaluationTopics(templateData.evaluationTopics)
+          if (templateData.name) setName(templateData.name);
+          if (templateData.description) setDescription(templateData.description);
+          if (templateData.actors) setActors(templateData.actors);
+          if (templateData.milestones) setMilestones(templateData.milestones);
+          if (templateData.costs) setCosts(templateData.costs);
+          if (templateData.benefits) setBenefits(templateData.benefits);
+          if (templateData.risks) setRisks(templateData.risks);
+          if (templateData.strategicGoals) setStrategicGoals(templateData.strategicGoals);
+          // if (templateData.domains) setDomains(templateData.domains);
+          if (templateData.costCenters) setCostCenters(templateData.costCenters);
+          if (templateData.evaluationTopics) setEvaluationTopics(templateData.evaluationTopics);
         } catch (error) {
-          console.error(`Error loading template data for ${selectedTemplate}:`, error)
+          console.error(`Error loading template data for ${selectedTemplate}:`, error);
           // Gérer l'erreur (afficher un message, etc.)
         } finally {
-          setIsLoading(false)
+          setIsLoading(false);
         }
-      }
+      };
 
-      loadTemplateData()
+      loadTemplateData();
     }
-  }, [selectedTemplate])
+  }, [selectedTemplate]);
 
   // Handlers pour les modales
   const manageActors = () => {
-    setActiveModal("actors")
-  }
+    setActiveModal("actors");
+  };
 
   const manageGoals = () => {
-    setActiveModal("goals")
-  }
+    setActiveModal("goals");
+  };
 
   const manageDomains = () => {
-    setActiveModal("domains")
-  }
+    setActiveModal("domains");
+  };
 
   const manageCostCenters = () => {
-    setActiveModal("costCenters")
-  }
+    setActiveModal("costCenters");
+  };
 
   const manageEvaluationTopics = () => {
-    setActiveModal("evaluationTopics")
-  }
+    setActiveModal("evaluationTopics");
+  };
 
   const closeModal = () => {
-    setActiveModal(null)
-  }
+    setActiveModal(null);
+  };
 
   // Handlers pour les changements
   const handleActorChange = (id: string, checked: boolean) => {
-    setActors(actors.map((actor) => (actor.id === id ? { ...actor, checked } : actor)))
-  }
+    setActors(actors.map((actor) => (actor.id === id ? { ...actor, checked } : actor)));
+  };
 
   const handleGoalChange = (id: string, checked: boolean) => {
-    setStrategicGoals(strategicGoals.map((goal) => (goal.id === id ? { ...goal, checked } : goal)))
-  }
+    setStrategicGoals(strategicGoals.map((goal) => (goal.id === id ? { ...goal, checked } : goal)));
+  };
 
-  const handleDomainChange = (id: string, checked: boolean) => {
-    setDomains(domains.map((domain) => (domain.id === id ? { ...domain, checked } : domain)))
-  }
+  // const handleDomainChange = (id: string, checked: boolean) => {
+  // setDomains(domains.map((domain) => (domain.id === id ? { ...domain, checked } : domain)));
+  // };
 
   const handleCostCenterChange = (id: string, checked: boolean) => {
-    setCostCenters(costCenters.map((center) => (center.id === id ? { ...center, checked } : center)))
-  }
+    setCostCenters(
+      costCenters.map((center) => (center.id === id ? { ...center, checked } : center)),
+    );
+  };
 
   const handleEvaluationTopicChange = (id: string, checked: boolean) => {
-    setEvaluationTopics(evaluationTopics.map((topic) => (topic.id === id ? { ...topic, checked } : topic)))
-  }
+    setEvaluationTopics(
+      evaluationTopics.map((topic) => (topic.id === id ? { ...topic, checked } : topic)),
+    );
+  };
 
   // Handlers pour sauvegarder les modifications des modales
   const saveActors = (updatedItems: CheckboxItem[]) => {
-    setActors(updatedItems.map((item) => ({ id: item.id, name: item.label, checked: item.checked })))
-  }
+    setActors(
+      updatedItems.map((item) => ({ id: item.id, name: item.label, checked: item.checked })),
+    );
+  };
 
-  const saveGoals = (updatedItems: CheckboxItem[]) => {
-    setStrategicGoals(updatedItems)
-  }
+  const saveGoals = async (newGoal: string) => {
+    const data = {
+      name: newGoal,
+      idOrganization,
+    };
+    const response = await api.post("/goals", data);
 
-  const saveDomains = (updatedItems: CheckboxItem[]) => {
-    setDomains(updatedItems)
-  }
+    if (response.status === 201) {
+      const newItem = {
+        id: response.data.id,
+        label: newGoal,
+        checked: false,
+      };
+      setStrategicGoals([...strategicGoals, newItem]);
+    } else {
+      console.error("Error creating new goal:", response.statusText);
+    }
+  };
+
+  const saveDomains = async (newDomain: string) => {
+    const domain = await createDomain({ name: newDomain, idOrganization });
+    addDomain({
+      id: domain.id,
+      name: newDomain,
+      checked: false,
+      idOrganization: domain.idOrganization,
+    });
+  };
+
+  const updateDomains = async (id: string, name: string) => {
+    const domain = await callUpdateDomain(id, name);
+    updateDomain({
+      id: domain.id,
+      name: domain.name,
+      checked: false,
+      idOrganization: domain.idOrganization,
+    });
+  };
+
+  const deleteDomain = async (id: string) => {
+    console.log("Deleting domain with ID:", id);
+    await callDeleteDomain(id);
+    refetch();
+  };
 
   const saveCostCenters = (updatedItems: CheckboxItem[]) => {
-    setCostCenters(updatedItems)
-  }
+    setCostCenters(updatedItems);
+  };
 
   const saveEvaluationTopics = (updatedItems: CheckboxItem[]) => {
-    setEvaluationTopics(updatedItems)
-  }
+    setEvaluationTopics(updatedItems);
+  };
 
   // Handlers pour l'édition
   const handleEditClick = (type: string, id: string, data: any) => {
-    setEditingItem({ type, id, data })
-  }
+    setEditingItem({ type, id, data });
+  };
 
   const handleEditSave = () => {
-    if (!editingItem) return
+    if (!editingItem) return;
 
-    const { type, id, data } = editingItem
+    const { type, id, data } = editingItem;
 
     switch (type) {
       case "milestone":
-        setMilestones(milestones.map((m) => (m.id === id ? { ...data, id } : m)))
-        break
+        setMilestones(milestones.map((m) => (m.id === id ? { ...data, id } : m)));
+        break;
       case "cost":
-        setCosts(costs.map((c) => (c.id === id ? { ...data, id } : c)))
-        break
+        setCosts(costs.map((c) => (c.id === id ? { ...data, id } : c)));
+        break;
       case "benefit":
-        setBenefits(benefits.map((b) => (b.id === id ? { ...data, id } : b)))
-        break
+        setBenefits(benefits.map((b) => (b.id === id ? { ...data, id } : b)));
+        break;
       case "risk":
-        setRisks(risks.map((r) => (r.id === id ? { ...data, id } : r)))
-        break
+        setRisks(risks.map((r) => (r.id === id ? { ...data, id } : r)));
+        break;
     }
 
-    setEditingItem(null)
-  }
+    setEditingItem(null);
+  };
 
   const handleEditCancel = () => {
-    setEditingItem(null)
-  }
+    setEditingItem(null);
+  };
 
   // Handlers pour la suppression
   const handleDeleteClick = (type: string, id: string, name: string) => {
-    setDeletingItem({ type, id, name })
-  }
+    setDeletingItem({ type, id, name });
+  };
 
   const handleDeleteConfirm = () => {
-    if (!deletingItem) return
+    if (!deletingItem) return;
 
-    const { type, id } = deletingItem
+    const { type, id } = deletingItem;
 
     switch (type) {
       case "milestone":
-        setMilestones(milestones.filter((m) => m.id !== id))
-        break
+        setMilestones(milestones.filter((m) => m.id !== id));
+        break;
       case "cost":
-        setCosts(costs.filter((c) => c.id !== id))
-        break
+        setCosts(costs.filter((c) => c.id !== id));
+        break;
       case "benefit":
-        setBenefits(benefits.filter((b) => b.id !== id))
-        break
+        setBenefits(benefits.filter((b) => b.id !== id));
+        break;
       case "risk":
-        setRisks(risks.filter((r) => r.id !== id))
-        break
+        setRisks(risks.filter((r) => r.id !== id));
+        break;
     }
 
-    setDeletingItem(null)
-  }
+    setDeletingItem(null);
+  };
 
   const handleDeleteCancel = () => {
-    setDeletingItem(null)
-  }
+    setDeletingItem(null);
+  };
 
   // Handlers pour l'ajout
   const handleAddMilestone = () => {
-    if (!newMilestone.description || !newMilestone.dueDate) return
+    if (!newMilestone.description || !newMilestone.dueDate) return;
 
-    const id = `milestone-${Date.now()}`
+    const id = `milestone-${Date.now()}`;
     const milestone: Milestone = {
       id,
       description: newMilestone.description || "",
@@ -674,23 +724,24 @@ export default function CreateBusinessCase() {
       priority: (newMilestone.priority as "Low" | "Medium" | "High" | "Urgent") || "Medium",
       status: (newMilestone.status as "Not Started" | "In Progress" | "Completed") || "Not Started",
       checked: newMilestone.checked || true,
-    }
+    };
 
-    setMilestones([...milestones, milestone])
+    setMilestones([...milestones, milestone]);
     setNewMilestone({
       description: "",
       dueDate: "",
       priority: "Medium",
       status: "Not Started",
       checked: true,
-    })
-    setIsAddingMilestone(false)
-  }
+    });
+    setIsAddingMilestone(false);
+  };
 
   const handleAddCost = () => {
-    if (!newCost.description || !newCost.date || !newCost.period || newCost.amount === undefined) return
+    if (!newCost.description || !newCost.date || !newCost.period || newCost.amount === undefined)
+      return;
 
-    const id = `cost-${Date.now()}`
+    const id = `cost-${Date.now()}`;
     const cost: Cost = {
       id,
       description: newCost.description || "",
@@ -700,9 +751,9 @@ export default function CreateBusinessCase() {
       type: (newCost.type as "CAPEX" | "OPEX") || "CAPEX",
       actualValue: newCost.actualValue || false,
       checked: newCost.checked || true,
-    }
+    };
 
-    setCosts([...costs, cost])
+    setCosts([...costs, cost]);
     setNewCost({
       description: "",
       date: "",
@@ -711,14 +762,14 @@ export default function CreateBusinessCase() {
       type: "CAPEX",
       actualValue: false,
       checked: true,
-    })
-    setIsAddingCost(false)
-  }
+    });
+    setIsAddingCost(false);
+  };
 
   const handleAddBenefit = () => {
-    if (!newBenefit.description) return
+    if (!newBenefit.description) return;
 
-    const id = `benefit-${Date.now()}`
+    const id = `benefit-${Date.now()}`;
     const benefit: Benefit = {
       id,
       description: newBenefit.description || "",
@@ -726,40 +777,40 @@ export default function CreateBusinessCase() {
       type: (newBenefit.type as "Qualitative" | "Quantitative") || "Quantitative",
       actualValue: newBenefit.actualValue || false,
       checked: newBenefit.checked || true,
-    }
+    };
 
-    setBenefits([...benefits, benefit])
+    setBenefits([...benefits, benefit]);
     setNewBenefit({
       description: "",
       amount: 0,
       type: "Quantitative",
       actualValue: false,
       checked: true,
-    })
-    setIsAddingBenefit(false)
-  }
+    });
+    setIsAddingBenefit(false);
+  };
 
   const handleAddRisk = () => {
-    if (!newRisk.description) return
+    if (!newRisk.description) return;
 
-    const id = `risk-${Date.now()}`
+    const id = `risk-${Date.now()}`;
     const risk: Risk = {
       id,
       description: newRisk.description || "",
       impact: (newRisk.impact as "Low" | "Medium" | "High") || "Medium",
       probability: (newRisk.probability as "Low" | "Medium" | "High") || "Medium",
       checked: newRisk.checked || true,
-    }
+    };
 
-    setRisks([...risks, risk])
+    setRisks([...risks, risk]);
     setNewRisk({
       description: "",
       impact: "Medium",
       probability: "Medium",
       checked: true,
-    })
-    setIsAddingRisk(false)
-  }
+    });
+    setIsAddingRisk(false);
+  };
 
   // Préparation des données pour l'API
   const prepareBusinessCaseData = () => {
@@ -776,39 +827,39 @@ export default function CreateBusinessCase() {
       domains: domains.filter((d) => d.checked),
       costCenters: costCenters.filter((c) => c.checked),
       evaluationTopics: evaluationTopics.filter((e) => e.checked),
-    }
-  }
+    };
+  };
 
   // Soumission du formulaire
   const handleSaveDraft = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const businessCaseData = prepareBusinessCaseData()
-      const result = await apiService.saveBusinessCase(businessCaseData, "draft")
-      console.log("Business case draft saved:", result)
-      alert("Business case draft saved successfully!")
+      const businessCaseData = prepareBusinessCaseData();
+      const result = await apiService.saveBusinessCase(businessCaseData, "draft");
+      console.log("Business case draft saved:", result);
+      alert("Business case draft saved successfully!");
     } catch (error) {
-      console.error("Error saving business case draft:", error)
-      alert("An error occurred while saving the business case draft")
+      console.error("Error saving business case draft:", error);
+      alert("An error occurred while saving the business case draft");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleConclude = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const businessCaseData = prepareBusinessCaseData()
-      const result = await apiService.saveBusinessCase(businessCaseData, "concluded")
-      console.log("Business case concluded:", result)
-      alert("Business case concluded successfully!")
+      const businessCaseData = prepareBusinessCaseData();
+      const result = await apiService.saveBusinessCase(businessCaseData, "concluded");
+      console.log("Business case concluded:", result);
+      alert("Business case concluded successfully!");
     } catch (error) {
-      console.error("Error concluding business case:", error)
-      alert("An error occurred while concluding the business case")
+      console.error("Error concluding business case:", error);
+      alert("An error occurred while concluding the business case");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -816,7 +867,7 @@ export default function CreateBusinessCase() {
         <h1 className="text-2xl font-semibold flex items-center gap-2">
           <span className="text-gray-600">Business Cases</span>
           <span className="text-gray-400">/</span>
-          <span>Create New</span>
+          <span>New Template</span>
         </h1>
         <Button onClick={handleSaveDraft} disabled={isLoading}>
           {isLoading ? "Saving..." : "Save Draft"}
@@ -824,40 +875,17 @@ export default function CreateBusinessCase() {
       </div>
 
       <div className="space-y-6">
-        {/* Template Selection */}
-        <div className="relative">
-          <div
-            className="border rounded-md p-3 flex justify-between items-center cursor-pointer"
-            onClick={() => setIsTemplateOpen(!isTemplateOpen)}
-          >
-            <span className="font-medium">Template</span>
-            <Button variant="ghost" size="sm" className="p-1 h-auto">
-              {isTemplateOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </Button>
-          </div>
-
-          {isTemplateOpen && (
-            <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg">
-              <RadioGroup value={selectedTemplate || ""} onValueChange={setSelectedTemplate} className="p-2 space-y-2">
-                {templates.map((template) => (
-                  <div key={template.id} className="flex items-center space-x-2">
-                    <RadioGroupItem value={template.id} id={template.id} />
-                    <label htmlFor={template.id} className="text-sm">
-                      {template.name}
-                    </label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-          )}
-        </div>
-
         {/* Name Field */}
         <div>
           <label htmlFor="name" className="block text-sm font-medium mb-1">
             Name
           </label>
-          <Input id="name" className="w-full" value={name} onChange={(e) => setName(e.target.value)} />
+          <Input
+            id="name"
+            className="w-full"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </div>
 
         {/* Description Field */}
@@ -885,8 +913,8 @@ export default function CreateBusinessCase() {
                 variant="outline"
                 size="sm"
                 onClick={(e) => {
-                  e.stopPropagation()
-                  manageActors()
+                  e.stopPropagation();
+                  manageActors();
                 }}
               >
                 Manage
@@ -938,7 +966,9 @@ export default function CreateBusinessCase() {
                   <label className="block text-sm font-medium mb-1">Description</label>
                   <Input
                     value={newMilestone.description}
-                    onChange={(e) => setNewMilestone({ ...newMilestone, description: e.target.value })}
+                    onChange={(e) =>
+                      setNewMilestone({ ...newMilestone, description: e.target.value })
+                    }
                     placeholder="Enter milestone description"
                   />
                 </div>
@@ -954,7 +984,9 @@ export default function CreateBusinessCase() {
                   <label className="block text-sm font-medium mb-1">Priority</label>
                   <Select
                     value={newMilestone.priority}
-                    onValueChange={(value) => setNewMilestone({ ...newMilestone, priority: value as any })}
+                    onValueChange={(value) =>
+                      setNewMilestone({ ...newMilestone, priority: value as any })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select priority" />
@@ -971,7 +1003,9 @@ export default function CreateBusinessCase() {
                   <label className="block text-sm font-medium mb-1">Status</label>
                   <Select
                     value={newMilestone.status}
-                    onValueChange={(value) => setNewMilestone({ ...newMilestone, status: value as any })}
+                    onValueChange={(value) =>
+                      setNewMilestone({ ...newMilestone, status: value as any })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
@@ -1034,8 +1068,12 @@ export default function CreateBusinessCase() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {milestones.map((milestone) => (
                   <tr key={milestone.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{milestone.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{milestone.dueDate}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {milestone.description}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {milestone.dueDate}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
@@ -1052,7 +1090,9 @@ export default function CreateBusinessCase() {
                         {milestone.priority}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{milestone.status}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {milestone.status}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex items-center space-x-2">
                         <input
@@ -1060,8 +1100,10 @@ export default function CreateBusinessCase() {
                           checked={milestone.checked}
                           onChange={(e) => {
                             setMilestones(
-                              milestones.map((m) => (m.id === milestone.id ? { ...m, checked: e.target.checked } : m)),
-                            )
+                              milestones.map((m) =>
+                                m.id === milestone.id ? { ...m, checked: e.target.checked } : m,
+                              ),
+                            );
                           }}
                           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         />
@@ -1075,7 +1117,9 @@ export default function CreateBusinessCase() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteClick("milestone", milestone.id, milestone.description)}
+                          onClick={() =>
+                            handleDeleteClick("milestone", milestone.id, milestone.description)
+                          }
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -1132,7 +1176,9 @@ export default function CreateBusinessCase() {
                   <Input
                     type="number"
                     value={newCost.amount?.toString()}
-                    onChange={(e) => setNewCost({ ...newCost, amount: Number.parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setNewCost({ ...newCost, amount: Number.parseFloat(e.target.value) || 0 })
+                    }
                   />
                 </div>
                 <div>
@@ -1224,13 +1270,21 @@ export default function CreateBusinessCase() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {costs.map((cost) => (
                   <tr key={cost.id}>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{cost.description}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{cost.date}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{cost.period}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {cost.description}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {cost.date}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {cost.period}
+                    </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                       {cost.amount.toLocaleString()}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{cost.type}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {cost.type}
+                    </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                       {cost.actualValue ? (
                         <Check size={16} className="text-green-500" />
@@ -1244,11 +1298,19 @@ export default function CreateBusinessCase() {
                           type="checkbox"
                           checked={cost.checked}
                           onChange={(e) => {
-                            setCosts(costs.map((c) => (c.id === cost.id ? { ...c, checked: e.target.checked } : c)))
+                            setCosts(
+                              costs.map((c) =>
+                                c.id === cost.id ? { ...c, checked: e.target.checked } : c,
+                              ),
+                            );
                           }}
                           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         />
-                        <Button variant="ghost" size="icon" onClick={() => handleEditClick("cost", cost.id, cost)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditClick("cost", cost.id, cost)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
@@ -1310,7 +1372,12 @@ export default function CreateBusinessCase() {
                   <Input
                     type="number"
                     value={newBenefit.amount?.toString()}
-                    onChange={(e) => setNewBenefit({ ...newBenefit, amount: Number.parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setNewBenefit({
+                        ...newBenefit,
+                        amount: Number.parseFloat(e.target.value) || 0,
+                      })
+                    }
                     disabled={newBenefit.type === "Qualitative"}
                   />
                 </div>
@@ -1319,7 +1386,9 @@ export default function CreateBusinessCase() {
                     <input
                       type="checkbox"
                       checked={newBenefit.actualValue}
-                      onChange={(e) => setNewBenefit({ ...newBenefit, actualValue: e.target.checked })}
+                      onChange={(e) =>
+                        setNewBenefit({ ...newBenefit, actualValue: e.target.checked })
+                      }
                       className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
                     <span>Actual Value</span>
@@ -1376,13 +1445,17 @@ export default function CreateBusinessCase() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {benefits.map((benefit) => (
                   <tr key={benefit.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{benefit.description}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {benefit.description}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {typeof benefit.amount === "number" && benefit.amount > 0
                         ? benefit.amount.toLocaleString()
                         : "0.00"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{benefit.type}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {benefit.type}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {benefit.actualValue ? (
                         <Check size={16} className="text-green-500" />
@@ -1397,8 +1470,10 @@ export default function CreateBusinessCase() {
                           checked={benefit.checked}
                           onChange={(e) => {
                             setBenefits(
-                              benefits.map((b) => (b.id === benefit.id ? { ...b, checked: e.target.checked } : b)),
-                            )
+                              benefits.map((b) =>
+                                b.id === benefit.id ? { ...b, checked: e.target.checked } : b,
+                              ),
+                            );
                           }}
                           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         />
@@ -1412,7 +1487,9 @@ export default function CreateBusinessCase() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteClick("benefit", benefit.id, benefit.description)}
+                          onClick={() =>
+                            handleDeleteClick("benefit", benefit.id, benefit.description)
+                          }
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -1525,7 +1602,9 @@ export default function CreateBusinessCase() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {risks.map((risk) => (
                   <tr key={risk.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{risk.description}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {risk.description}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
@@ -1560,11 +1639,19 @@ export default function CreateBusinessCase() {
                           type="checkbox"
                           checked={risk.checked}
                           onChange={(e) => {
-                            setRisks(risks.map((r) => (r.id === risk.id ? { ...r, checked: e.target.checked } : r)))
+                            setRisks(
+                              risks.map((r) =>
+                                r.id === risk.id ? { ...r, checked: e.target.checked } : r,
+                              ),
+                            );
                           }}
                           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         />
-                        <Button variant="ghost" size="icon" onClick={() => handleEditClick("risk", risk.id, risk)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditClick("risk", risk.id, risk)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
@@ -1597,7 +1684,10 @@ export default function CreateBusinessCase() {
           title="Domains"
           items={domains}
           defaultOpen={false}
-          onItemChange={handleDomainChange}
+          // onItemChange={handleDomainChange}
+          onItemChange={() => {
+            console.log("Domain changed");
+          }}
           onManage={manageDomains}
         />
 
@@ -1652,6 +1742,8 @@ export default function CreateBusinessCase() {
         isOpen={activeModal === "domains"}
         onClose={closeModal}
         onSave={saveDomains}
+        onUpdate={updateDomains}
+        onDelete={deleteDomain}
       />
 
       <ManageItemsModal
@@ -2084,5 +2176,5 @@ export default function CreateBusinessCase() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
