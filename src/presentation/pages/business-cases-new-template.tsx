@@ -21,13 +21,14 @@ import {
   createEvaluationTopic,
 } from "@/services/evaluation-topic.service";
 import { callCreateBusinessCase } from "@/services/business-case.service";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateBusinessCaseTemplate() {
   // États pour les données du formulaire
-  // const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading] = useState(false);
+  const navigate = useNavigate();
 
   const idOrganization = "56336201-b466-4168-84ca-382a699cce63";
   const idProject = "9add0321-a12e-4c1a-b635-6628d0206b20";
@@ -242,18 +243,12 @@ export default function CreateBusinessCaseTemplate() {
     console.log("Business Case Data:", businessCase);
     const newBusinessCase = await callCreateBusinessCase(businessCase);
     console.log("New Business Case Created:", newBusinessCase);
+
+    navigate("/manage-templates");
   };
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <span className="text-gray-600">Business Cases</span>
-          <span className="text-gray-400">/</span>
-          <span>New Template</span>
-        </h1>
-      </div>
-
       <div className="space-y-6">
         {/* Name Field */}
         <div>
