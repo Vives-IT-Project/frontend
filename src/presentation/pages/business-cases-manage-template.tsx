@@ -1,5 +1,6 @@
 import { getBusinessCaseTemplates } from "@/services/business-case.service";
 import { BusinessCase } from "@/types/business-case";
+import { CircleArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -11,9 +12,7 @@ type TemplateBootleg = {
 
 function ManageTemplateShow({ templates }: { templates: TemplateBootleg[] }) {
   const navigate = useNavigate();
-  const routeToNewTemplate = () => {
-    navigate("/new-template");
-  };
+
   // Fonctions de gestion des actions
   const handleEdit = (id: number) => {
     console.log("Édition de l'élément avec ID:", id);
@@ -25,23 +24,19 @@ function ManageTemplateShow({ templates }: { templates: TemplateBootleg[] }) {
     // Ajoutez votre logique de suppression ici
   };
 
-  // Formatage de la date pour l'affichage
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-En", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   return (
     <div className="overflow-x-auto">
-      <div className="flex justify-between mb-4">
+      <div className="flex justify-start mb-4 gap-4">
         <button
           type="button"
-          onClick={routeToNewTemplate}
+          onClick={() => navigate("/business-cases")}
+          className=" bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-2 rounded cursor-pointer"
+        >
+          <CircleArrowLeft />
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate("/business-case/new")}
           className=" bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded cursor-pointer"
         >
           New Template
@@ -51,27 +46,27 @@ function ManageTemplateShow({ templates }: { templates: TemplateBootleg[] }) {
       <table className="min-w-full bg-white border border-gray-200">
         <thead>
           <tr className="bg-gray-100">
-            <th className="py-3 px-4 border-b text-left">Name</th>
-            <th className="py-3 px-4 border-b text-left">Created By</th>
-            <th className="py-3 px-4 border-b text-left">Actions</th>
+            <th className="py-3 px-4 border-b text-left min-w-2/3 ">Name</th>
+            <th className="py-3 px-4 border-b text-left w-fit">Created By</th>
+            <th className="py-3 px-4 border-b text-left w-fit">Actions</th>
           </tr>
         </thead>
         <tbody>
           {templates.map((template) => (
             <tr key={template.id} className="hover:bg-gray-50">
-              <td className="py-3 px-4 border-b">{template.name}</td>
-              <td className="py-3 px-4 border-b">{template.createdBy}</td>
-              <td className="py-3 px-4 border-b">
+              <td className="py-3 px-4 border-b ">{template.name}</td>
+              <td className="py-3 px-4 border-b w-64">{template.createdBy}</td>
+              <td className="py-3 px-4 border-b w-fit">
                 <div className="flex space-x-2">
                   <button
                     onClick={() => handleEdit(template.id)}
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    className="cursor-pointer px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(template.id)}
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    className="cursor-pointer px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                   >
                     Delete
                   </button>
