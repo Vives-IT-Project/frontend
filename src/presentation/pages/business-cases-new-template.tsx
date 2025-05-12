@@ -20,27 +20,18 @@ import {
   callUpdateEvaluationTopic,
   createEvaluationTopic,
 } from "@/services/evaluation-topic.service";
-
-interface CheckboxItem {
-  id: string;
-  label: string;
-  checked: boolean;
-}
+import { callCreateBusinessCase } from "@/services/business-case.service";
 
 export default function CreateBusinessCaseTemplate() {
   // États pour les données du formulaire
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  // const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
 
   const idOrganization = "56336201-b466-4168-84ca-382a699cce63";
-
-  const [strategicGoals, setStrategicGoals] = useState<CheckboxItem[]>([]);
-
-  const [selectedDomains, setSelectedDomains] = useState<CheckboxItem[]>([]);
-  const [selectedCostCenters, setSelectedCostCenters] = useState<CheckboxItem[]>([]);
-  const [selectedGoals, setSelectedGoals] = useState<CheckboxItem[]>([]);
+  const idProject = "9add0321-a12e-4c1a-b635-6628d0206b20";
+  const idUser = "2902f1f9-06c4-4982-9177-a1e00cf2a33e";
 
   const { domains, addDomain, refetch, updateDomain } = useDomains();
   const { goals, addGoal, refetch: refetchGoals, updateGoal } = useGoals();
@@ -230,9 +221,28 @@ export default function CreateBusinessCaseTemplate() {
     refetchEvaluationTopics();
   };
 
-  const handleSaveDraft = async () => {};
-
-  const handleConclude = async () => {};
+  const handleConclude = async () => {
+    const businessCase = {
+      name,
+      description,
+      idOrganization,
+      idProject,
+      isTemplate: true,
+      createdBy: idUser,
+      idTemplate: undefined,
+      goals: goals.filter((goal) => goal.checked).map((goal) => goal.id!),
+      costCenters: costCenters
+        .filter((costCenter) => costCenter.checked)
+        .map((costCenter) => costCenter.id!),
+      evaluationTopics: evaluationTopics
+        .filter((evaluationTopic) => evaluationTopic.checked)
+        .map((evaluationTopic) => evaluationTopic.id!),
+      domains: domains.filter((domain) => domain.checked).map((domain) => domain.id!),
+    };
+    console.log("Business Case Data:", businessCase);
+    const newBusinessCase = await callCreateBusinessCase(businessCase);
+    console.log("New Business Case Created:", newBusinessCase);
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -242,9 +252,6 @@ export default function CreateBusinessCaseTemplate() {
           <span className="text-gray-400">/</span>
           <span>New Template</span>
         </h1>
-        <Button className="cursor-pointer" onClick={handleSaveDraft} disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save Draft"}
-        </Button>
       </div>
 
       <div className="space-y-6">
@@ -312,14 +319,6 @@ export default function CreateBusinessCaseTemplate() {
       </div>
 
       <div className="flex justify-end mt-6 gap-3">
-        <Button
-          variant="secondary"
-          className="cursor-pointer"
-          onClick={handleSaveDraft}
-          disabled={isLoading}
-        >
-          {isLoading ? "Saving..." : "Save Draft"}
-        </Button>
         <Button
           onClick={handleConclude}
           disabled={isLoading}
