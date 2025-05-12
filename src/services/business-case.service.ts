@@ -6,6 +6,11 @@ export const getBusinessCases = async () => {
   return response.data;
 };
 
+export const getBusinessCaseTemplates = async () => {
+  const response = await api.get("/business-case/templates");
+  return response.data;
+};
+
 export const callCreateBusinessCase = async (data: BusinessCase) => {
   const response = await api.post("/business-case", data);
   return response.data;
