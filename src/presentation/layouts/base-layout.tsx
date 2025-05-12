@@ -33,7 +33,7 @@ const BaseLayout = () => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       <aside
         className={`bg-indigo-950 text-white flex flex-col items-center transition-all duration-300 ${
           isCollapsed ? "w-16" : "w-52"
