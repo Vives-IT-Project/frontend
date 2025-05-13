@@ -6,7 +6,7 @@ import GeneralSettings from "./presentation/pages/general-settings";
 import Login from "./presentation/pages/login";
 import Register from "./presentation/pages/register";
 import Complexity from "./presentation/pages/complexity/complexity"
-import NewComplexity from "./presentation/pages/complexity/new-complexity"
+import BusinessCaseComplexity from "./presentation/pages/business-case-complexity";
 
 const router = createBrowserRouter([
   {
@@ -42,10 +42,10 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/new-complexity",
+        path: "/business-case-complexity",
         element: (
           <div>
-            <NewComplexity />
+            <BusinessCaseComplexity />
           </div>
         ),
       },

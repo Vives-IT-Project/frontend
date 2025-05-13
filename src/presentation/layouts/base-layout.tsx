@@ -66,10 +66,10 @@ const BaseLayout = () => {
             to="/complexity"
           />
           <MenuItem
-            label="New Complexity"
+            label="BC Complexity" 
             icon={<ClipboardList />}
             collapsed={isCollapsed}
-            to="/new-complexity"/>
+            to="/business-case-complexity"/>
         </nav>
       </aside>
 
