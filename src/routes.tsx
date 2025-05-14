@@ -7,6 +7,9 @@ import Login from "./presentation/pages/login";
 import Register from "./presentation/pages/register";
 import Complexity from "./presentation/pages/complexity/complexity"
 import BusinessCaseComplexity from "./presentation/pages/business-case-complexity";
+import ManageTemplate from "./presentation/pages/business-cases-manage-template";
+import NewTemplate from "./presentation/pages/business-cases-new-template";
+import CreateBusinessCase from "./presentation/pages/new-business-cases";
 
 const router = createBrowserRouter([
   {
@@ -22,6 +25,30 @@ const router = createBrowserRouter([
         element: (
           <div>
             <BusinessCases />
+          </div>
+        ),
+      },
+      {
+        path: "/manage-templates",
+        element: (
+          <div>
+            <ManageTemplate />
+          </div>
+        ),
+      },
+      {
+        path: "/new-business-case",
+        element: (
+          <div>
+            <CreateBusinessCase />
+          </div>
+        ),
+      },
+      {
+        path: "/new-template",
+        element: (
+          <div>
+            <NewTemplate />
           </div>
         ),
       },
