@@ -6,6 +6,11 @@ import GeneralSettings from "./presentation/pages/general-settings";
 import Login from "./presentation/pages/login";
 import Register from "./presentation/pages/register";
 import AuditPage from "./presentation/pages/audit";
+import Complexity from "./presentation/pages/complexity/complexity";
+import BusinessCaseComplexity from "./presentation/pages/business-case-complexity";
+import ManageTemplate from "./presentation/pages/business-cases-manage-template";
+import NewTemplate from "./presentation/pages/business-cases-new-template";
+import CreateBusinessCase from "./presentation/pages/new-business-cases";
 
 const router = createBrowserRouter([
   {
@@ -25,6 +30,30 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "/manage-templates",
+        element: (
+          <div>
+            <ManageTemplate />
+          </div>
+        ),
+      },
+      {
+        path: "/new-business-case",
+        element: (
+          <div>
+            <CreateBusinessCase />
+          </div>
+        ),
+      },
+      {
+        path: "/new-template",
+        element: (
+          <div>
+            <NewTemplate />
+          </div>
+        ),
+      },
+      {
         path: "/app-settings",
         element: (
           <div>
@@ -34,7 +63,27 @@ const router = createBrowserRouter([
       },
       {
         path: "/audit",
-        element: <AuditPage />,
+        element: (
+          <div>
+            <AuditPage />
+          </div>
+        ),
+      },
+      {
+        path: "/complexity",
+        element: (
+          <div>
+            <Complexity />
+          </div>
+        ),
+      },
+      {
+        path: "/business-case-complexity",
+        element: (
+          <div>
+            <BusinessCaseComplexity />
+          </div>
+        ),
       },
     ],
   },
