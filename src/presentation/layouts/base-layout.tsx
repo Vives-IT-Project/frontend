@@ -65,6 +65,17 @@ const BaseLayout = () => {
             collapsed={isCollapsed}
             to="/app-settings"
           />
+            <MenuItem
+            label="Complexity"
+            icon={<ClipboardList />}
+            collapsed={isCollapsed}
+            to="/complexity"
+          />
+          <MenuItem
+            label="BC Complexity" 
+            icon={<ClipboardList />}
+            collapsed={isCollapsed}
+            to="/business-case-complexity"/>
         </nav>
       </aside>
 
