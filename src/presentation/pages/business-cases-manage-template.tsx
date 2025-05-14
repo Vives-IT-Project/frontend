@@ -36,7 +36,7 @@ function ManageTemplateShow({ templates }: { templates: TemplateBootleg[] }) {
         </button>
         <button
           type="button"
-          onClick={() => navigate("/business-case/new")}
+          onClick={() => navigate("/new-template")}
           className=" bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded cursor-pointer"
         >
           New Template

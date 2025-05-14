@@ -11,6 +11,11 @@ export const getBusinessCaseTemplates = async () => {
   return response.data;
 };
 
+export const getTemplateData = async (id: string) => {
+  const response = await api.get(`/business-case/templates/${id}`);
+  return response.data;
+};
+
 export const callCreateBusinessCase = async (data: BusinessCase) => {
   const response = await api.post("/business-case", data);
   return response.data;
@@ -24,6 +29,10 @@ export const callUpdateBusinessCase = async (id: string, name: string): Promise<
 };
 
 export const callDeleteBusinessCase = async (id: string) => {
-  const response = await api.delete(`/business-case/${id}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/business-case/${id}`);
+    return response.data;
+  } catch {
+    console.error("Error deleting business case");
+  }
 };

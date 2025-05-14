@@ -43,7 +43,7 @@ export function CollapsibleCheckboxSection({
   };
 
   return (
-    <div className="border rounded-md">
+    <div className="border rounded-md ">
       <div className="flex justify-between items-center p-3 cursor-pointer" onClick={toggleSection}>
         <h2 className="font-medium">{title}</h2>
         <Button variant="ghost" size="sm" className="p-1 h-auto">
@@ -53,19 +53,21 @@ export function CollapsibleCheckboxSection({
 
       {isOpen && (
         <div className="p-4 pt-0 border-t">
-          <div className="flex justify-end my-2">
-            <Button
-              className="cursor-pointer"
-              variant="outline"
-              size="sm"
-              onClick={handleManageClick}
-              disabled={!onManage}
-            >
-              Manage
-            </Button>
-          </div>
+          {onManage && (
+            <div className="flex justify-end my-2">
+              <Button
+                className="cursor-pointer"
+                variant="outline"
+                size="sm"
+                onClick={handleManageClick}
+                disabled={!onManage}
+              >
+                Manage
+              </Button>
+            </div>
+          )}
           {items.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6 ">
               {items.map((item) => (
                 <div key={item.id} className="flex items-center space-x-2">
                   <Checkbox
@@ -83,7 +85,7 @@ export function CollapsibleCheckboxSection({
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500 col-span-2">
+            <p className="text-sm text-gray-500 col-span-2 mt-8">
               No items available. Please add items to this section.
             </p>
           )}

@@ -1,13 +1,22 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { ChevronDown, ChevronUp, Check, X, Edit, Trash2, AlertTriangle } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { CollapsibleCheckboxSection } from "@/components/collapsible-checkbox-section"
-import { ManageItemsModal } from "@/components/manage-items-modal"
+import { useState, useEffect, useRef } from "react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Check,
+  X,
+  Edit,
+  Trash2,
+  AlertTriangle,
+  CircleArrowLeft,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  CheckboxItem,
+  CollapsibleCheckboxSection,
+} from "@/components/collapsible-checkbox-section";
 import {
   Dialog,
   DialogContent,
@@ -15,62 +24,56 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  callCreateBusinessCase,
+  callDeleteBusinessCase,
+  getBusinessCaseTemplates,
+  getTemplateData,
+} from "@/services/business-case.service";
+import { BusinessCase } from "@/types/business-case";
+import { useNavigate } from "react-router-dom";
+import { Goal } from "@/types/goal";
+import { Domain } from "@/types/domain";
+import { ManageItemsModal } from "@/components/manage-items-modal";
+import { useActors } from "../hooks/useActors";
+import { callDeleteActor, callUpdateActor, createActor } from "@/services/actor.service";
+import { Milestone } from "@/types/milestone";
+import {
+  callDeleteMilestone,
+  callUpdateMilestone,
+  createMilestone,
+} from "@/services/milestone.service";
+import { useMilestones } from "../hooks/useMilestones";
+import { useRisks } from "../hooks/useRisks";
+import { callDeleteRisk, callUpdateRisk, createRisk } from "@/services/risk.service";
+import { Risk } from "@/types/risk";
+import { Benefit } from "@/types/benefit";
+import { useBenefits } from "../hooks/useBenefits";
+import { callDeleteBenefit, callUpdateBenefit, createBenefit } from "@/services/benefit.service";
 
 // Types
 interface Template {
-  id: string
-  name: string
-}
-
-interface Actor {
-  id: string
-  name: string
-  checked: boolean
-}
-
-interface Milestone {
-  id: string
-  description: string
-  dueDate: string
-  priority: "Low" | "Medium" | "High" | "Urgent"
-  status: "Not Started" | "In Progress" | "Completed"
-  checked: boolean
+  id: string;
+  name: string;
 }
 
 interface Cost {
-  id: string
-  description: string
-  date: string
-  period: string
-  amount: number
-  type: "CAPEX" | "OPEX"
-  actualValue: boolean
-  checked: boolean
-}
-
-interface Benefit {
-  id: string
-  description: string
-  amount: number | string
-  type: "Qualitative" | "Quantitative"
-  actualValue: boolean
-  checked: boolean
-}
-
-interface Risk {
-  id: string
-  description: string
-  impact: "Low" | "Medium" | "High"
-  probability: "Low" | "Medium" | "High"
-  checked: boolean
-}
-
-interface CheckboxItem {
-  id: string
-  label: string
-  checked: boolean
+  id: string;
+  description: string;
+  date: string;
+  period: string;
+  amount: number;
+  type: "CAPEX" | "OPEX";
+  estimatedActual: boolean;
+  checked: boolean;
 }
 
 // API service pour les appels backend
@@ -88,10 +91,10 @@ const apiService = {
         { id: "large-it", name: "Large IT Business Case" },
         { id: "small-hr", name: "Small HR Business Case" },
         { id: "large-admin", name: "Large Administrative Business Case" },
-      ]
+      ];
     } catch (error) {
-      console.error("Error fetching templates:", error)
-      throw error
+      console.error("Error fetching templates:", error);
+      throw error;
     }
   },
 
@@ -115,10 +118,10 @@ const apiService = {
         domains: [],
         costCenters: [],
         evaluationTopics: [],
-      }
+      };
     } catch (error) {
-      console.error(`Error fetching template details for ${templateId}:`, error)
-      throw error
+      console.error(`Error fetching template details for ${templateId}:`, error);
+      throw error;
     }
   },
 
@@ -136,10 +139,10 @@ const apiService = {
       // return await response.json();
 
       // Simulation de réponse pour le développement
-      return { id: "bc-" + Date.now(), ...data, status }
+      return { id: "bc-" + Date.now(), ...data, status };
     } catch (error) {
-      console.error("Error saving business case:", error)
-      throw error
+      console.error("Error saving business case:", error);
+      throw error;
     }
   },
 
@@ -157,83 +160,32 @@ const apiService = {
       // return await response.json();
 
       // Simulation de réponse pour le développement
-      return { id, ...data, updatedAt: new Date().toISOString() }
+      return { id, ...data, updatedAt: new Date().toISOString() };
     } catch (error) {
-      console.error(`Error updating business case ${id}:`, error)
-      throw error
+      console.error(`Error updating business case ${id}:`, error);
+      throw error;
     }
   },
-}
+};
 
 export default function CreateBusinessCase() {
   // États pour les données du formulaire
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const idOrganization = "56336201-b466-4168-84ca-382a699cce63";
+  const idProject = "9add0321-a12e-4c1a-b635-6628d0206b20";
+  const idUser = "2902f1f9-06c4-4982-9177-a1e00cf2a33e";
+
+  const { actors, addActor, refetch: refetchActors, updateActors } = useActors();
 
   // États pour les sections
-  const [templates, setTemplates] = useState<Template[]>([])
+  const [templates, setTemplates] = useState<BusinessCase[]>([]);
 
-  const [actors, setActors] = useState<Actor[]>([
-    { id: "john-doe", name: "John Doe", checked: true },
-    { id: "eleanor-rigby", name: "Eleanor Rigby", checked: false },
-    { id: "father-mckenzie", name: "Father McKenzie", checked: true },
-    { id: "atom-squad", name: "Atom Squad", checked: true },
-    { id: "city-hall", name: "City Hall", checked: false },
-    { id: "omega-squad", name: "Omega Squad", checked: false },
-  ])
-
-  const [milestones, setMilestones] = useState<Milestone[]>([
-    {
-      id: "project-kickoff",
-      description: "Project Kickoff",
-      dueDate: "10/10/2025",
-      priority: "Low",
-      status: "Not Started",
-      checked: true,
-    },
-    {
-      id: "requirements",
-      description: "Requirements Finalization",
-      dueDate: "10/10/2025",
-      priority: "Medium",
-      status: "Not Started",
-      checked: false,
-    },
-    {
-      id: "prototype",
-      description: "Prototype Development",
-      dueDate: "10/15/2025",
-      priority: "Urgent",
-      status: "Not Started",
-      checked: true,
-    },
-    {
-      id: "testing",
-      description: "Testing & Validation",
-      dueDate: "10/18/2025",
-      priority: "High",
-      status: "Not Started",
-      checked: false,
-    },
-    {
-      id: "training",
-      description: "User Training & Onboarding",
-      dueDate: "10/20/2025",
-      priority: "Low",
-      status: "Not Started",
-      checked: false,
-    },
-    {
-      id: "go-live",
-      description: "Go-Live Date",
-      dueDate: "10/30/2025",
-      priority: "Low",
-      status: "Not Started",
-      checked: true,
-    },
-  ])
+  // const [actors, setActors] = useState<Actor[]>([]);
 
   const [costs, setCosts] = useState<Cost[]>([
     {
@@ -243,7 +195,7 @@ export default function CreateBusinessCase() {
       period: "Q2 2025",
       amount: 15000,
       type: "CAPEX",
-      actualValue: true,
+      estimatedActual: true,
       checked: true,
     },
     {
@@ -253,7 +205,7 @@ export default function CreateBusinessCase() {
       period: "Q3 2025",
       amount: 250,
       type: "OPEX",
-      actualValue: false,
+      estimatedActual: false,
       checked: false,
     },
     {
@@ -263,7 +215,7 @@ export default function CreateBusinessCase() {
       period: "Q3 2025",
       amount: 18000,
       type: "OPEX",
-      actualValue: true,
+      estimatedActual: true,
       checked: true,
     },
     {
@@ -273,7 +225,7 @@ export default function CreateBusinessCase() {
       period: "Q3 2025",
       amount: 22000,
       type: "CAPEX",
-      actualValue: false,
+      estimatedActual: false,
       checked: false,
     },
     {
@@ -283,7 +235,7 @@ export default function CreateBusinessCase() {
       period: "Q3 2025",
       amount: 560,
       type: "OPEX",
-      actualValue: false,
+      estimatedActual: false,
       checked: false,
     },
     {
@@ -293,117 +245,12 @@ export default function CreateBusinessCase() {
       period: "Q3 2025",
       amount: 35000,
       type: "CAPEX",
-      actualValue: true,
+      estimatedActual: true,
       checked: true,
     },
-  ])
+  ]);
 
-  const [benefits, setBenefits] = useState<Benefit[]>([
-    {
-      id: "time-savings",
-      description: "Time savings by automating manual data entry",
-      amount: 0,
-      type: "Qualitative",
-      actualValue: true,
-      checked: true,
-    },
-    {
-      id: "new-market",
-      description: "New market penetration increasing yearly sales",
-      amount: 120000,
-      type: "Quantitative",
-      actualValue: false,
-      checked: false,
-    },
-    {
-      id: "partner-collab",
-      description: "Improved partner collaboration through shared platform",
-      amount: 0,
-      type: "Qualitative",
-      actualValue: true,
-      checked: true,
-    },
-    {
-      id: "revenue-increase",
-      description: "Increased monthly revenue from new customer acquisition",
-      amount: 50000,
-      type: "Quantitative",
-      actualValue: false,
-      checked: false,
-    },
-    {
-      id: "cost-reduction",
-      description: "Reduction in operational costs through automation",
-      amount: 15000,
-      type: "Quantitative",
-      actualValue: true,
-      checked: true,
-    },
-    {
-      id: "satisfaction",
-      description: "Improved customer satisfaction due to faster response times",
-      amount: 0,
-      type: "Qualitative",
-      actualValue: true,
-      checked: true,
-    },
-  ])
-
-  const [risks, setRisks] = useState<Risk[]>([
-    {
-      id: "api-integration",
-      description: "Delay in third-party API integration",
-      impact: "High",
-      probability: "Medium",
-      checked: true,
-    },
-    {
-      id: "turnover",
-      description: "Key team member turnover during project execution",
-      impact: "Medium",
-      probability: "Medium",
-      checked: true,
-    },
-    {
-      id: "budget-overrun",
-      description: "Budget overrun due to underestimation of cloud costs",
-      impact: "High",
-      probability: "High",
-      checked: true,
-    },
-    {
-      id: "adoption",
-      description: "End-user adoption is lower than expected",
-      impact: "High",
-      probability: "Medium",
-      checked: true,
-    },
-    {
-      id: "legacy-systems",
-      description: "Integration conflict with existing legacy systems",
-      impact: "Low",
-      probability: "Low",
-      checked: true,
-    },
-    {
-      id: "compliance",
-      description: "Regulatory compliance requirements change mid-project",
-      impact: "Medium",
-      probability: "Low",
-      checked: true,
-    },
-  ])
-
-  const [strategicGoals, setStrategicGoals] = useState<CheckboxItem[]>([
-    { id: "reduce-costs", label: "Reduce Operational Costs", checked: true },
-    { id: "enhance-experience", label: "Enhance Customer Experience", checked: false },
-    { id: "improve-efficiency", label: "Improve Efficiency & Productivity", checked: true },
-    { id: "expand-market", label: "Expand Market Share", checked: true },
-    { id: "ensure-compliance", label: "Ensure Regulatory Compliance", checked: false },
-    { id: "accelerate-digital", label: "Accelerate Digital Transformation", checked: false },
-    { id: "optimize-supply", label: "Optimize Supply Chain", checked: true },
-    { id: "boost-engagement", label: "Boost Employee Engagement", checked: false },
-  ])
+  const [strategicGoals, setStrategicGoals] = useState<CheckboxItem[]>([]);
 
   const [domains, setDomains] = useState<CheckboxItem[]>([
     { id: "finance", label: "Finance & Accounting", checked: true },
@@ -414,7 +261,7 @@ export default function CreateBusinessCase() {
     { id: "legal", label: "Legal & Compliance", checked: false },
     { id: "research", label: "Research & Development", checked: true },
     { id: "support", label: "Customer Support & Service", checked: false },
-  ])
+  ]);
 
   const [costCenters, setCostCenters] = useState<CheckboxItem[]>([
     { id: "cc-rd", label: "Research & Development", checked: true },
@@ -423,7 +270,7 @@ export default function CreateBusinessCase() {
     { id: "cc-it", label: "Information Technology", checked: false },
     { id: "cc-hr", label: "Human Resources", checked: true },
     { id: "cc-finance", label: "Finance", checked: false },
-  ])
+  ]);
 
   const [evaluationTopics, setEvaluationTopics] = useState<CheckboxItem[]>([
     { id: "et-roi", label: "Return on Investment (ROI)", checked: true },
@@ -432,31 +279,37 @@ export default function CreateBusinessCase() {
     { id: "et-feasibility", label: "Technical Feasibility", checked: false },
     { id: "et-sustainability", label: "Sustainability", checked: true },
     { id: "et-compliance", label: "Regulatory Compliance", checked: false },
-  ])
+  ]);
 
   // États pour les modales
-  const [activeModal, setActiveModal] = useState<string | null>(null)
-  const [isTemplateOpen, setIsTemplateOpen] = useState(false)
-  const [isActorsOpen, setIsActorsOpen] = useState(false)
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [isTemplateOpen, setIsTemplateOpen] = useState(false);
+  const [isActorsOpen, setIsActorsOpen] = useState(false);
 
   // États pour l'édition et la suppression
-  const [editingItem, setEditingItem] = useState<{ type: string; id: string; data: any } | null>(null)
-  const [deletingItem, setDeletingItem] = useState<{ type: string; id: string; name: string } | null>(null)
+  const [editingItem, setEditingItem] = useState<{ type: string; id: string; data: any } | null>(
+    null,
+  );
+  const [deletingItem, setDeletingItem] = useState<{
+    type: string;
+    id: string;
+    name: string;
+  } | null>(null);
 
   // États pour l'ajout de nouveaux éléments
-  const [isAddingMilestone, setIsAddingMilestone] = useState(false)
-  const [isAddingCost, setIsAddingCost] = useState(false)
-  const [isAddingBenefit, setIsAddingBenefit] = useState(false)
-  const [isAddingRisk, setIsAddingRisk] = useState(false)
+  const [isAddingMilestone, setIsAddingMilestone] = useState(false);
+  const [isAddingCost, setIsAddingCost] = useState(false);
+  const [isAddingBenefit, setIsAddingBenefit] = useState(false);
+  const [isAddingRisk, setIsAddingRisk] = useState(false);
 
   // Nouveaux éléments temporaires
   const [newMilestone, setNewMilestone] = useState<Partial<Milestone>>({
     description: "",
-    dueDate: "",
+    limitDate: "",
     priority: "Medium",
     status: "Not Started",
     checked: true,
-  })
+  });
 
   const [newCost, setNewCost] = useState<Partial<Cost>>({
     description: "",
@@ -464,233 +317,209 @@ export default function CreateBusinessCase() {
     period: "",
     amount: 0,
     type: "CAPEX",
-    actualValue: false,
+    estimatedActual: false,
     checked: true,
-  })
+  });
 
   const [newBenefit, setNewBenefit] = useState<Partial<Benefit>>({
     description: "",
     amount: 0,
     type: "Quantitative",
-    actualValue: false,
+    estimatedActual: false,
     checked: true,
-  })
+  });
 
   const [newRisk, setNewRisk] = useState<Partial<Risk>>({
     description: "",
-    impact: "Medium",
+    impactLevel: "Medium",
     probability: "Medium",
     checked: true,
-  })
+    mitigationStrategy: "",
+  });
 
   // Charger les templates au chargement de la page
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const templatesData = await apiService.getTemplates()
-        setTemplates(templatesData)
+        const templatesData = await getBusinessCaseTemplates();
+        setTemplates(templatesData);
       } catch (error) {
-        console.error("Failed to load templates:", error)
+        console.error("Failed to load templates:", error);
         // Gérer l'erreur (afficher un message, etc.)
       }
-    }
+    };
 
-    fetchTemplates()
-  }, [])
-
-  // Effet pour charger les données du template sélectionné
-  useEffect(() => {
-    if (selectedTemplate) {
-      const loadTemplateData = async () => {
-        setIsLoading(true)
-        try {
-          const templateData = await apiService.getTemplateDetails(selectedTemplate)
-
-          // Mettre à jour les états avec les données du template
-          // Note: Dans un cas réel, vous adapteriez ces assignations selon la structure de votre API
-          if (templateData.name) setName(templateData.name)
-          if (templateData.description) setDescription(templateData.description)
-          if (templateData.actors) setActors(templateData.actors)
-          if (templateData.milestones) setMilestones(templateData.milestones)
-          if (templateData.costs) setCosts(templateData.costs)
-          if (templateData.benefits) setBenefits(templateData.benefits)
-          if (templateData.risks) setRisks(templateData.risks)
-          if (templateData.strategicGoals) setStrategicGoals(templateData.strategicGoals)
-          if (templateData.domains) setDomains(templateData.domains)
-          if (templateData.costCenters) setCostCenters(templateData.costCenters)
-          if (templateData.evaluationTopics) setEvaluationTopics(templateData.evaluationTopics)
-        } catch (error) {
-          console.error(`Error loading template data for ${selectedTemplate}:`, error)
-          // Gérer l'erreur (afficher un message, etc.)
-        } finally {
-          setIsLoading(false)
-        }
-      }
-
-      loadTemplateData()
-    }
-  }, [selectedTemplate])
+    fetchTemplates();
+  }, []);
 
   // Handlers pour les modales
   const manageActors = () => {
-    setActiveModal("actors")
-  }
-
-  const manageGoals = () => {
-    setActiveModal("goals")
-  }
-
-  const manageDomains = () => {
-    setActiveModal("domains")
-  }
-
-  const manageCostCenters = () => {
-    setActiveModal("costCenters")
-  }
-
-  const manageEvaluationTopics = () => {
-    setActiveModal("evaluationTopics")
-  }
-
-  const closeModal = () => {
-    setActiveModal(null)
-  }
+    setActiveModal("actors");
+  };
 
   // Handlers pour les changements
   const handleActorChange = (id: string, checked: boolean) => {
-    setActors(actors.map((actor) => (actor.id === id ? { ...actor, checked } : actor)))
-  }
+    setActors(actors.map((actor) => (actor.id === id ? { ...actor, checked } : actor)));
+  };
 
   const handleGoalChange = (id: string, checked: boolean) => {
-    setStrategicGoals(strategicGoals.map((goal) => (goal.id === id ? { ...goal, checked } : goal)))
-  }
+    setStrategicGoals(strategicGoals.map((goal) => (goal.id === id ? { ...goal, checked } : goal)));
+  };
 
   const handleDomainChange = (id: string, checked: boolean) => {
-    setDomains(domains.map((domain) => (domain.id === id ? { ...domain, checked } : domain)))
-  }
+    setDomains(domains.map((domain) => (domain.id === id ? { ...domain, checked } : domain)));
+  };
 
   const handleCostCenterChange = (id: string, checked: boolean) => {
-    setCostCenters(costCenters.map((center) => (center.id === id ? { ...center, checked } : center)))
-  }
+    setCostCenters(
+      costCenters.map((center) => (center.id === id ? { ...center, checked } : center)),
+    );
+  };
 
   const handleEvaluationTopicChange = (id: string, checked: boolean) => {
-    setEvaluationTopics(evaluationTopics.map((topic) => (topic.id === id ? { ...topic, checked } : topic)))
-  }
-
-  // Handlers pour sauvegarder les modifications des modales
-  const saveActors = (updatedItems: CheckboxItem[]) => {
-    setActors(updatedItems.map((item) => ({ id: item.id, name: item.label, checked: item.checked })))
-  }
-
-  const saveGoals = (updatedItems: CheckboxItem[]) => {
-    setStrategicGoals(updatedItems)
-  }
-
-  const saveDomains = (updatedItems: CheckboxItem[]) => {
-    setDomains(updatedItems)
-  }
-
-  const saveCostCenters = (updatedItems: CheckboxItem[]) => {
-    setCostCenters(updatedItems)
-  }
-
-  const saveEvaluationTopics = (updatedItems: CheckboxItem[]) => {
-    setEvaluationTopics(updatedItems)
-  }
+    setEvaluationTopics(
+      evaluationTopics.map((topic) => (topic.id === id ? { ...topic, checked } : topic)),
+    );
+  };
 
   // Handlers pour l'édition
   const handleEditClick = (type: string, id: string, data: any) => {
-    setEditingItem({ type, id, data })
-  }
+    console.log("Editing item:", type, id, data);
+    setEditingItem({ type, id, data });
+  };
 
-  const handleEditSave = () => {
-    if (!editingItem) return
+  const handleEditSave = async () => {
+    if (!editingItem) return;
 
-    const { type, id, data } = editingItem
+    const { type, id, data } = editingItem;
 
     switch (type) {
-      case "milestone":
-        setMilestones(milestones.map((m) => (m.id === id ? { ...data, id } : m)))
-        break
+      case "milestone": {
+        try {
+          data.limitDate = new Date(data.limitDate).toISOString();
+          delete data.checked;
+          await callUpdateMilestone(id, data);
+          refetchMilestones();
+        } catch (error) {
+          console.error("Error updating milestone:", error);
+        } finally {
+          setEditingItem(null);
+        }
+        break;
+      }
       case "cost":
-        setCosts(costs.map((c) => (c.id === id ? { ...data, id } : c)))
-        break
+        setCosts(costs.map((c) => (c.id === id ? { ...data, id } : c)));
+        break;
       case "benefit":
-        setBenefits(benefits.map((b) => (b.id === id ? { ...data, id } : b)))
-        break
+        try {
+          delete data.checked;
+          data.idBusinessCase = idBusinessCase.current;
+          await callUpdateBenefit(id, data);
+          refetchBenefits();
+        } catch (error) {
+          console.error("Error updating benefit:", error);
+        } finally {
+          setEditingItem(null);
+        }
+        break;
       case "risk":
-        setRisks(risks.map((r) => (r.id === id ? { ...data, id } : r)))
-        break
+        {
+          try {
+            delete data.checked;
+            data.idBusinessCase = idBusinessCase.current;
+            await callUpdateRisk(id, data);
+            refetchRisks();
+          } catch (error) {
+            console.error("Error updating risk:", error);
+          } finally {
+            setEditingItem(null);
+          }
+        }
+        break;
     }
 
-    setEditingItem(null)
-  }
+    setEditingItem(null);
+  };
 
   const handleEditCancel = () => {
-    setEditingItem(null)
-  }
+    setEditingItem(null);
+  };
 
   // Handlers pour la suppression
   const handleDeleteClick = (type: string, id: string, name: string) => {
-    setDeletingItem({ type, id, name })
-  }
+    setDeletingItem({ type, id, name });
+  };
 
-  const handleDeleteConfirm = () => {
-    if (!deletingItem) return
+  const handleDeleteConfirm = async () => {
+    if (!deletingItem) return;
 
-    const { type, id } = deletingItem
+    const { type, id } = deletingItem;
 
     switch (type) {
       case "milestone":
-        setMilestones(milestones.filter((m) => m.id !== id))
-        break
+        await callDeleteMilestone(id);
+        refetchMilestones();
+        break;
       case "cost":
-        setCosts(costs.filter((c) => c.id !== id))
-        break
+        setCosts(costs.filter((c) => c.id !== id));
+        break;
       case "benefit":
-        setBenefits(benefits.filter((b) => b.id !== id))
-        break
+        await callDeleteBenefit(id);
+        refetchBenefits();
+        break;
       case "risk":
-        setRisks(risks.filter((r) => r.id !== id))
-        break
+        await callDeleteRisk(id);
+        refetchRisks();
+        break;
     }
 
-    setDeletingItem(null)
-  }
+    setDeletingItem(null);
+  };
 
   const handleDeleteCancel = () => {
-    setDeletingItem(null)
-  }
+    setDeletingItem(null);
+  };
+
+  const { milestones, updateMilestones, refetch: refetchMilestones } = useMilestones();
 
   // Handlers pour l'ajout
-  const handleAddMilestone = () => {
-    if (!newMilestone.description || !newMilestone.dueDate) return
+  const handleAddMilestone = async () => {
+    if (
+      !newMilestone.name ||
+      !newMilestone.description ||
+      !newMilestone.limitDate ||
+      !newMilestone.status ||
+      !newMilestone.priority
+    )
+      return;
 
-    const id = `milestone-${Date.now()}`
     const milestone: Milestone = {
-      id,
-      description: newMilestone.description || "",
-      dueDate: newMilestone.dueDate || "",
-      priority: (newMilestone.priority as "Low" | "Medium" | "High" | "Urgent") || "Medium",
-      status: (newMilestone.status as "Not Started" | "In Progress" | "Completed") || "Not Started",
-      checked: newMilestone.checked || true,
-    }
+      description: newMilestone.description,
+      limitDate: new Date(newMilestone.limitDate).toISOString(),
+      priority: newMilestone.priority,
+      status: newMilestone.status,
+      idBusinessCase: idBusinessCase.current,
+      name: newMilestone.name,
+    };
 
-    setMilestones([...milestones, milestone])
+    await createMilestone(milestone);
+    refetchMilestones();
+
     setNewMilestone({
       description: "",
-      dueDate: "",
+      limitDate: "",
       priority: "Medium",
       status: "Not Started",
       checked: true,
-    })
-    setIsAddingMilestone(false)
-  }
+    });
+    setIsAddingMilestone(false);
+  };
 
   const handleAddCost = () => {
-    if (!newCost.description || !newCost.date || !newCost.period || newCost.amount === undefined) return
+    if (!newCost.description || !newCost.date || !newCost.period || newCost.amount === undefined)
+      return;
 
-    const id = `cost-${Date.now()}`
+    const id = `cost-${Date.now()}`;
     const cost: Cost = {
       id,
       description: newCost.description || "",
@@ -698,158 +527,221 @@ export default function CreateBusinessCase() {
       period: newCost.period || "",
       amount: newCost.amount || 0,
       type: (newCost.type as "CAPEX" | "OPEX") || "CAPEX",
-      actualValue: newCost.actualValue || false,
+      estimatedActual: newCost.estimatedActual || false,
       checked: newCost.checked || true,
-    }
+    };
 
-    setCosts([...costs, cost])
+    setCosts([...costs, cost]);
     setNewCost({
       description: "",
       date: "",
       period: "",
       amount: 0,
       type: "CAPEX",
-      actualValue: false,
+      estimatedActual: false,
       checked: true,
-    })
-    setIsAddingCost(false)
-  }
+    });
+    setIsAddingCost(false);
+  };
 
-  const handleAddBenefit = () => {
-    if (!newBenefit.description) return
+  const { benefits, refetch: refetchBenefits, updateBenefits } = useBenefits();
 
-    const id = `benefit-${Date.now()}`
+  const handleAddBenefit = async () => {
+    if (
+      !newBenefit.description ||
+      !newBenefit.amount ||
+      !newBenefit.type ||
+      !newBenefit.estimatedActual ||
+      !idBusinessCase.current
+    )
+      return;
+
     const benefit: Benefit = {
-      id,
-      description: newBenefit.description || "",
-      amount: newBenefit.amount || 0,
-      type: (newBenefit.type as "Qualitative" | "Quantitative") || "Quantitative",
-      actualValue: newBenefit.actualValue || false,
-      checked: newBenefit.checked || true,
-    }
+      amount: newBenefit.amount,
+      description: newBenefit.description,
+      type: newBenefit.type,
+      estimatedActual: newBenefit.estimatedActual,
+      idBusinessCase: idBusinessCase.current,
+      idAllocation: "a91ae45d-e06e-4475-b366-cda877735833",
+    };
 
-    setBenefits([...benefits, benefit])
+    await createBenefit(benefit);
+    refetchBenefits();
+
     setNewBenefit({
       description: "",
       amount: 0,
       type: "Quantitative",
-      actualValue: false,
+      estimatedActual: false,
       checked: true,
-    })
-    setIsAddingBenefit(false)
-  }
+    });
+    setIsAddingBenefit(false);
+  };
 
-  const handleAddRisk = () => {
-    if (!newRisk.description) return
+  const { risks, refetch: refetchRisks, updateRisks } = useRisks();
 
-    const id = `risk-${Date.now()}`
-    const risk: Risk = {
-      id,
+  const handleAddRisk = async () => {
+    if (
+      !newRisk.description ||
+      !newRisk.impactLevel ||
+      !newRisk.probability ||
+      !newRisk.mitigationStrategy
+    )
+      return;
+
+    const risk = {
       description: newRisk.description || "",
-      impact: (newRisk.impact as "Low" | "Medium" | "High") || "Medium",
-      probability: (newRisk.probability as "Low" | "Medium" | "High") || "Medium",
-      checked: newRisk.checked || true,
-    }
+      impactLevel: newRisk.impactLevel,
+      probability: newRisk.probability,
+      idBusinessCase: idBusinessCase.current,
+      mitigationStrategy: newRisk.mitigationStrategy,
+    };
 
-    setRisks([...risks, risk])
+    await createRisk(risk);
+    refetchRisks();
+
     setNewRisk({
       description: "",
-      impact: "Medium",
+      impactLevel: "Medium",
       probability: "Medium",
       checked: true,
-    })
-    setIsAddingRisk(false)
-  }
+      mitigationStrategy: "",
+    });
+    setIsAddingRisk(false);
+  };
 
-  // Préparation des données pour l'API
-  const prepareBusinessCaseData = () => {
-    return {
-      name,
-      description,
-      templateId: selectedTemplate,
-      actors: actors.filter((a) => a.checked).map(({ id, name }) => ({ id, name })),
-      milestones: milestones.filter((m) => m.checked),
-      costs: costs.filter((c) => c.checked),
-      benefits: benefits.filter((b) => b.checked),
-      risks: risks.filter((r) => r.checked),
-      strategicGoals: strategicGoals.filter((g) => g.checked),
-      domains: domains.filter((d) => d.checked),
-      costCenters: costCenters.filter((c) => c.checked),
-      evaluationTopics: evaluationTopics.filter((e) => e.checked),
-    }
-  }
-
-  // Soumission du formulaire
-  const handleSaveDraft = async () => {
-    setIsLoading(true)
-    try {
-      const businessCaseData = prepareBusinessCaseData()
-      const result = await apiService.saveBusinessCase(businessCaseData, "draft")
-      console.log("Business case draft saved:", result)
-      alert("Business case draft saved successfully!")
-    } catch (error) {
-      console.error("Error saving business case draft:", error)
-      alert("An error occurred while saving the business case draft")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const isTemporary = useRef<boolean>(true);
+  const idBusinessCase = useRef<string>("");
+  const creationCalled = useRef<boolean>(false);
 
   const handleConclude = async () => {
-    setIsLoading(true)
-    try {
-      const businessCaseData = prepareBusinessCaseData()
-      const result = await apiService.saveBusinessCase(businessCaseData, "concluded")
-      console.log("Business case concluded:", result)
-      alert("Business case concluded successfully!")
-    } catch (error) {
-      console.error("Error concluding business case:", error)
-      alert("An error occurred while concluding the business case")
-    } finally {
-      setIsLoading(false)
+    isTemporary.current = false;
+  };
+
+  /**
+   * Creates a new Business Case when the page is loaded.
+   * Deletes the Business Case if the user navigates away.
+   */
+  useEffect(() => {
+    const createBusinessCase = async () => {
+      setIsLoading(true);
+      try {
+        const businessCase = {
+          name: "TEMP",
+          description: "TEMP",
+          idOrganization,
+          idProject,
+          isTemplate: false,
+          createdBy: idUser,
+          idTemplate: "186f29e2-fc13-49e0-b1c2-55dd3e0d623b",
+          goals: [],
+          costCenters: [],
+          evaluationTopics: [],
+          domains: [],
+        };
+        const newBusinessCase = await callCreateBusinessCase(businessCase);
+        // setIdBusinessCase(newBusinessCase.id);
+        idBusinessCase.current = newBusinessCase.id;
+        console.log("Business case created:", newBusinessCase);
+      } catch (error) {
+        console.error("Error creating business case:", error);
+      }
+    };
+    if (!idBusinessCase.current && !creationCalled.current) {
+      creationCalled.current = true;
+      createBusinessCase();
     }
-  }
+    return () => {
+      // Delete the business case if the user navigates away
+      const deleteBusinessCase = async () => {
+        await callDeleteBusinessCase(idBusinessCase.current);
+      };
+      if (isTemporary.current) {
+        deleteBusinessCase();
+      }
+    };
+  }, []);
+
+  /**
+   * Loads the template data when a template is selected.
+   */
+  useEffect(() => {
+    const fetchTemplateData = async () => {
+      if (!selectedTemplate) return;
+      const template = await getTemplateData(selectedTemplate);
+      console.log("Template data:", template);
+      setStrategicGoals(
+        template.Goal.map((goal: Goal) => ({
+          id: goal.id,
+          name: goal.name,
+          checked: false,
+        })),
+      );
+      setDomains(
+        template.Domain.map((domain: Domain) => ({
+          id: domain.id,
+          name: domain.name,
+          checked: false,
+        })),
+      );
+
+      setCostCenters(
+        template.CostCenter.map((costCenter: Domain) => ({
+          id: costCenter.id,
+          name: costCenter.name,
+          checked: false,
+        })),
+      );
+
+      setEvaluationTopics(
+        template.EvaluationTopic.map((topic: Domain) => ({
+          id: topic.id,
+          name: topic.name,
+          checked: false,
+        })),
+      );
+    };
+    fetchTemplateData();
+  }, [selectedTemplate]);
+
+  const saveActor = async (newActor: string) => {
+    const actor = await createActor({ name: newActor, idOrganization, type: 1 });
+    addActor({
+      id: actor.id,
+      name: actor.name,
+      checked: false,
+      idOrganization: actor.idOrganization,
+      type: actor.type,
+    });
+  };
+
+  const updateActor = async (id: string, name: string) => {
+    const updatedActor = await callUpdateActor(id, name);
+    updateActors({
+      id: updatedActor.id,
+      name: updatedActor.name,
+      checked: false,
+      idOrganization: updatedActor.idOrganization,
+      type: updatedActor.type,
+    });
+  };
+
+  const deleteActor = async (id: string) => {
+    await callDeleteActor(id);
+    refetchActors();
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <span className="text-gray-600">Business Cases</span>
-          <span className="text-gray-400">/</span>
-          <span>Create New</span>
-        </h1>
-        <Button onClick={handleSaveDraft} disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save Draft"}
-        </Button>
-      </div>
-
       <div className="space-y-6">
-        {/* Template Selection */}
-        <div className="relative">
-          <div
-            className="border rounded-md p-3 flex justify-between items-center cursor-pointer"
-            onClick={() => setIsTemplateOpen(!isTemplateOpen)}
+        <div className="flex justify-start mb-4 gap-4">
+          <button
+            type="button"
+            onClick={() => navigate("/business-cases")}
+            className=" bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-2 rounded cursor-pointer"
           >
-            <span className="font-medium">Template</span>
-            <Button variant="ghost" size="sm" className="p-1 h-auto">
-              {isTemplateOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </Button>
-          </div>
-
-          {isTemplateOpen && (
-            <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg">
-              <RadioGroup value={selectedTemplate || ""} onValueChange={setSelectedTemplate} className="p-2 space-y-2">
-                {templates.map((template) => (
-                  <div key={template.id} className="flex items-center space-x-2">
-                    <RadioGroupItem value={template.id} id={template.id} />
-                    <label htmlFor={template.id} className="text-sm">
-                      {template.name}
-                    </label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-          )}
+            <CircleArrowLeft />
+          </button>
         </div>
 
         {/* Name Field */}
@@ -857,7 +749,12 @@ export default function CreateBusinessCase() {
           <label htmlFor="name" className="block text-sm font-medium mb-1">
             Name
           </label>
-          <Input id="name" className="w-full" value={name} onChange={(e) => setName(e.target.value)} />
+          <Input
+            id="name"
+            className="w-full"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </div>
 
         {/* Description Field */}
@@ -873,6 +770,78 @@ export default function CreateBusinessCase() {
           />
         </div>
 
+        {/* Template Selection */}
+        <div className="relative">
+          <div
+            className="border rounded-md p-3 flex justify-between items-center cursor-pointer"
+            onClick={() => setIsTemplateOpen(!isTemplateOpen)}
+          >
+            <span className="font-medium">Template</span>
+            <Button variant="ghost" size="sm" className="p-1 h-auto">
+              {isTemplateOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            </Button>
+          </div>
+
+          {isTemplateOpen && (
+            <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg">
+              <RadioGroup
+                value={selectedTemplate || ""}
+                onValueChange={setSelectedTemplate}
+                className="p-2 space-y-2"
+              >
+                {templates.map((template) => (
+                  <div key={template.id} className="flex items-center space-x-2">
+                    <RadioGroupItem value={template.id!} id={template.id} />
+                    <label htmlFor={template.id} className="text-sm">
+                      {template.name}
+                    </label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+          )}
+        </div>
+
+        {selectedTemplate ? (
+          <div className="space-y-4">
+            {/* Strategic and Operational Goals */}
+            <CollapsibleCheckboxSection
+              title="Strategic and Operational Goals"
+              items={strategicGoals}
+              defaultOpen={false}
+              onItemChange={handleGoalChange}
+            />
+
+            {/* Domains */}
+            <CollapsibleCheckboxSection
+              title="Domains"
+              items={domains}
+              defaultOpen={false}
+              onItemChange={handleDomainChange}
+            />
+
+            {/* Cost Centers */}
+            <CollapsibleCheckboxSection
+              title="Cost Centers"
+              items={costCenters}
+              defaultOpen={false}
+              onItemChange={handleCostCenterChange}
+            />
+
+            {/* Evaluation Topics */}
+            <CollapsibleCheckboxSection
+              title="Evaluation Topics"
+              items={evaluationTopics}
+              defaultOpen={false}
+              onItemChange={handleEvaluationTopicChange}
+            />
+          </div>
+        ) : (
+          <div>
+            <p className="ml-4 mt-8 mb-10 text-gray-800">Please select a template</p>
+          </div>
+        )}
+
         {/* Actors Section */}
         <div className="relative">
           <div
@@ -885,9 +854,10 @@ export default function CreateBusinessCase() {
                 variant="outline"
                 size="sm"
                 onClick={(e) => {
-                  e.stopPropagation()
-                  manageActors()
+                  e.stopPropagation();
+                  manageActors();
                 }}
+                className="cursor-pointer"
               >
                 Manage
               </Button>
@@ -906,7 +876,7 @@ export default function CreateBusinessCase() {
                       type="checkbox"
                       id={actor.id}
                       checked={actor.checked}
-                      onChange={(e) => handleActorChange(actor.id, e.target.checked)}
+                      onChange={(e) => handleActorChange(actor.id!, e.target.checked)}
                       className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
                     <label htmlFor={actor.id} className="text-sm">
@@ -935,10 +905,20 @@ export default function CreateBusinessCase() {
               <h3 className="text-sm font-medium mb-3">Add New Milestone</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
+                  <label className="block text-sm font-medium mb-1">Name</label>
+                  <Input
+                    value={newMilestone.name}
+                    onChange={(e) => setNewMilestone({ ...newMilestone, name: e.target.value })}
+                    placeholder="Enter milestone name"
+                  />
+                </div>
+                <div>
                   <label className="block text-sm font-medium mb-1">Description</label>
                   <Input
                     value={newMilestone.description}
-                    onChange={(e) => setNewMilestone({ ...newMilestone, description: e.target.value })}
+                    onChange={(e) =>
+                      setNewMilestone({ ...newMilestone, description: e.target.value })
+                    }
                     placeholder="Enter milestone description"
                   />
                 </div>
@@ -946,17 +926,21 @@ export default function CreateBusinessCase() {
                   <label className="block text-sm font-medium mb-1">Due Date</label>
                   <Input
                     type="date"
-                    value={newMilestone.dueDate}
-                    onChange={(e) => setNewMilestone({ ...newMilestone, dueDate: e.target.value })}
+                    value={newMilestone.limitDate}
+                    onChange={(e) =>
+                      setNewMilestone({ ...newMilestone, limitDate: e.target.value })
+                    }
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Priority</label>
                   <Select
                     value={newMilestone.priority}
-                    onValueChange={(value) => setNewMilestone({ ...newMilestone, priority: value as any })}
+                    onValueChange={(value) =>
+                      setNewMilestone({ ...newMilestone, priority: value as any })
+                    }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="cursor-pointer">
                       <SelectValue placeholder="Select priority" />
                     </SelectTrigger>
                     <SelectContent>
@@ -971,9 +955,11 @@ export default function CreateBusinessCase() {
                   <label className="block text-sm font-medium mb-1">Status</label>
                   <Select
                     value={newMilestone.status}
-                    onValueChange={(value) => setNewMilestone({ ...newMilestone, status: value as any })}
+                    onValueChange={(value) =>
+                      setNewMilestone({ ...newMilestone, status: value as any })
+                    }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="cursor-pointer">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -985,10 +971,15 @@ export default function CreateBusinessCase() {
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={() => setIsAddingMilestone(false)}>
+                <Button
+                  className="cursor-pointer"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsAddingMilestone(false)}
+                >
                   Cancel
                 </Button>
-                <Button size="sm" onClick={handleAddMilestone}>
+                <Button className="cursor-pointer" size="sm" onClick={handleAddMilestone}>
                   Add Milestone
                 </Button>
               </div>
@@ -1034,8 +1025,12 @@ export default function CreateBusinessCase() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {milestones.map((milestone) => (
                   <tr key={milestone.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{milestone.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{milestone.dueDate}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {milestone.description}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {milestone.limitDate}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
@@ -1052,30 +1047,36 @@ export default function CreateBusinessCase() {
                         {milestone.priority}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{milestone.status}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {milestone.status}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex items-center space-x-2">
                         <input
                           type="checkbox"
                           checked={milestone.checked}
                           onChange={(e) => {
-                            setMilestones(
-                              milestones.map((m) => (m.id === milestone.id ? { ...m, checked: e.target.checked } : m)),
-                            )
+                            const updatedMilestone = milestones.filter(
+                              (m) => m.id === milestone.id,
+                            )[0];
+                            updatedMilestone.checked = e.target.checked;
+                            updateMilestones(updatedMilestone);
                           }}
                           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         />
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleEditClick("milestone", milestone.id, milestone)}
+                          onClick={() => handleEditClick("milestone", milestone.id!, milestone)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteClick("milestone", milestone.id, milestone.description)}
+                          onClick={() =>
+                            handleDeleteClick("milestone", milestone.id!, milestone.description!)
+                          }
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -1132,7 +1133,9 @@ export default function CreateBusinessCase() {
                   <Input
                     type="number"
                     value={newCost.amount?.toString()}
-                    onChange={(e) => setNewCost({ ...newCost, amount: Number.parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setNewCost({ ...newCost, amount: Number.parseFloat(e.target.value) || 0 })
+                    }
                   />
                 </div>
                 <div>
@@ -1154,8 +1157,10 @@ export default function CreateBusinessCase() {
                   <label className="flex items-center space-x-2 text-sm">
                     <input
                       type="checkbox"
-                      checked={newCost.actualValue}
-                      onChange={(e) => setNewCost({ ...newCost, actualValue: e.target.checked })}
+                      checked={newCost.estimatedActual}
+                      onChange={(e) =>
+                        setNewCost({ ...newCost, estimatedActual: e.target.checked })
+                      }
                       className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
                     <span>Actual Value</span>
@@ -1224,15 +1229,23 @@ export default function CreateBusinessCase() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {costs.map((cost) => (
                   <tr key={cost.id}>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{cost.description}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{cost.date}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{cost.period}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {cost.description}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {cost.date}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {cost.period}
+                    </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                       {cost.amount.toLocaleString()}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{cost.type}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {cost.actualValue ? (
+                      {cost.type}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {cost.estimatedActual ? (
                         <Check size={16} className="text-green-500" />
                       ) : (
                         <X size={16} className="text-red-500" />
@@ -1244,11 +1257,19 @@ export default function CreateBusinessCase() {
                           type="checkbox"
                           checked={cost.checked}
                           onChange={(e) => {
-                            setCosts(costs.map((c) => (c.id === cost.id ? { ...c, checked: e.target.checked } : c)))
+                            setCosts(
+                              costs.map((c) =>
+                                c.id === cost.id ? { ...c, checked: e.target.checked } : c,
+                              ),
+                            );
                           }}
                           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         />
-                        <Button variant="ghost" size="icon" onClick={() => handleEditClick("cost", cost.id, cost)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditClick("cost", cost.id, cost)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
@@ -1310,7 +1331,12 @@ export default function CreateBusinessCase() {
                   <Input
                     type="number"
                     value={newBenefit.amount?.toString()}
-                    onChange={(e) => setNewBenefit({ ...newBenefit, amount: Number.parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setNewBenefit({
+                        ...newBenefit,
+                        amount: Number.parseFloat(e.target.value) || 0,
+                      })
+                    }
                     disabled={newBenefit.type === "Qualitative"}
                   />
                 </div>
@@ -1318,8 +1344,10 @@ export default function CreateBusinessCase() {
                   <label className="flex items-center space-x-2 text-sm">
                     <input
                       type="checkbox"
-                      checked={newBenefit.actualValue}
-                      onChange={(e) => setNewBenefit({ ...newBenefit, actualValue: e.target.checked })}
+                      checked={newBenefit.estimatedActual}
+                      onChange={(e) =>
+                        setNewBenefit({ ...newBenefit, estimatedActual: e.target.checked })
+                      }
                       className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
                     <span>Actual Value</span>
@@ -1376,15 +1404,19 @@ export default function CreateBusinessCase() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {benefits.map((benefit) => (
                   <tr key={benefit.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{benefit.description}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {benefit.description}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {typeof benefit.amount === "number" && benefit.amount > 0
                         ? benefit.amount.toLocaleString()
                         : "0.00"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{benefit.type}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {benefit.actualValue ? (
+                      {benefit.type}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {benefit.estimatedActual ? (
                         <Check size={16} className="text-green-500" />
                       ) : (
                         <X size={16} className="text-red-500" />
@@ -1396,23 +1428,25 @@ export default function CreateBusinessCase() {
                           type="checkbox"
                           checked={benefit.checked}
                           onChange={(e) => {
-                            setBenefits(
-                              benefits.map((b) => (b.id === benefit.id ? { ...b, checked: e.target.checked } : b)),
-                            )
+                            const updatedBenefit = benefits.filter((r) => r.id === benefit!.id)[0];
+                            updatedBenefit.checked = e.target.checked;
+                            updateBenefits(updatedBenefit);
                           }}
                           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         />
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleEditClick("benefit", benefit.id, benefit)}
+                          onClick={() => handleEditClick("benefit", benefit.id!, benefit)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteClick("benefit", benefit.id, benefit.description)}
+                          onClick={() =>
+                            handleDeleteClick("benefit", benefit.id!, benefit.description!)
+                          }
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -1448,14 +1482,22 @@ export default function CreateBusinessCase() {
                     placeholder="Enter risk description"
                   />
                 </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Mitigation Strategy</label>
+                  <Input
+                    value={newRisk.mitigationStrategy}
+                    onChange={(e) => setNewRisk({ ...newRisk, mitigationStrategy: e.target.value })}
+                    placeholder="Enter mitigation strategy"
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Impact</label>
                   <Select
-                    value={newRisk.impact}
-                    onValueChange={(value) => setNewRisk({ ...newRisk, impact: value as any })}
+                    value={newRisk.impactLevel}
+                    onValueChange={(value) => setNewRisk({ ...newRisk, impactLevel: value as any })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select impact" />
+                      <SelectValue placeholder="Select impactLevel" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Low">Low</SelectItem>
@@ -1525,19 +1567,21 @@ export default function CreateBusinessCase() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {risks.map((risk) => (
                   <tr key={risk.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{risk.description}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {risk.description}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                         ${
-                          risk.impact === "Low"
+                          risk.impactLevel === "Low"
                             ? "bg-green-100 text-green-800"
-                            : risk.impact === "Medium"
+                            : risk.impactLevel === "Medium"
                               ? "bg-yellow-100 text-yellow-800"
                               : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {risk.impact}
+                        {risk.impactLevel}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -1560,17 +1604,23 @@ export default function CreateBusinessCase() {
                           type="checkbox"
                           checked={risk.checked}
                           onChange={(e) => {
-                            setRisks(risks.map((r) => (r.id === risk.id ? { ...r, checked: e.target.checked } : r)))
+                            const updatedRisk = risks.filter((r) => r.id === risk.id)[0];
+                            updatedRisk.checked = e.target.checked;
+                            updateRisks(updatedRisk);
                           }}
                           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         />
-                        <Button variant="ghost" size="icon" onClick={() => handleEditClick("risk", risk.id, risk)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditClick("risk", risk.id!, risk)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteClick("risk", risk.id, risk.description)}
+                          onClick={() => handleDeleteClick("risk", risk.id!, risk.description)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -1582,92 +1632,22 @@ export default function CreateBusinessCase() {
             </table>
           </div>
         </div>
-
-        {/* Strategic and Operational Goals */}
-        <CollapsibleCheckboxSection
-          title="Strategic and Operational Goals"
-          items={strategicGoals}
-          defaultOpen={false}
-          onItemChange={handleGoalChange}
-          onManage={manageGoals}
-        />
-
-        {/* Domains */}
-        <CollapsibleCheckboxSection
-          title="Domains"
-          items={domains}
-          defaultOpen={false}
-          onItemChange={handleDomainChange}
-          onManage={manageDomains}
-        />
-
-        {/* Cost Centers */}
-        <CollapsibleCheckboxSection
-          title="Cost Centers"
-          items={costCenters}
-          defaultOpen={false}
-          onItemChange={handleCostCenterChange}
-          onManage={manageCostCenters}
-        />
-
-        {/* Evaluation Topics */}
-        <CollapsibleCheckboxSection
-          title="Evaluation Topics"
-          items={evaluationTopics}
-          defaultOpen={false}
-          onItemChange={handleEvaluationTopicChange}
-          onManage={manageEvaluationTopics}
-        />
       </div>
 
       <div className="flex justify-end mt-6 gap-3">
-        <Button variant="secondary" onClick={handleSaveDraft} disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save Draft"}
-        </Button>
         <Button onClick={handleConclude} disabled={isLoading}>
           {isLoading ? "Processing..." : "Conclude"}
         </Button>
       </div>
 
-      {/* Modales pour gérer les différentes sections */}
       <ManageItemsModal
         title="Actors"
-        items={actors.map((a) => ({ id: a.id, label: a.name, checked: a.checked }))}
+        items={actors}
         isOpen={activeModal === "actors"}
-        onClose={closeModal}
-        onSave={(items) => saveActors(items)}
-      />
-
-      <ManageItemsModal
-        title="Strategic And Operational Goals"
-        items={strategicGoals}
-        isOpen={activeModal === "goals"}
-        onClose={closeModal}
-        onSave={saveGoals}
-      />
-
-      <ManageItemsModal
-        title="Domains"
-        items={domains}
-        isOpen={activeModal === "domains"}
-        onClose={closeModal}
-        onSave={saveDomains}
-      />
-
-      <ManageItemsModal
-        title="Cost Centers"
-        items={costCenters}
-        isOpen={activeModal === "costCenters"}
-        onClose={closeModal}
-        onSave={saveCostCenters}
-      />
-
-      <ManageItemsModal
-        title="Evaluation Topics"
-        items={evaluationTopics}
-        isOpen={activeModal === "evaluationTopics"}
-        onClose={closeModal}
-        onSave={saveEvaluationTopics}
+        onClose={() => setActiveModal(null)}
+        onSave={saveActor}
+        onUpdate={updateActor}
+        onDelete={deleteActor}
       />
 
       {/* Modales pour l'édition */}
@@ -1695,17 +1675,18 @@ export default function CreateBusinessCase() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="dueDate" className="text-right text-sm font-medium">
+                <label htmlFor="limitDate" className="text-right text-sm font-medium">
                   Due Date
                 </label>
                 <Input
-                  id="dueDate"
+                  required
+                  id="limitDate"
                   type="date"
-                  value={editingItem.data.dueDate}
+                  value={editingItem.data.limitDate}
                   onChange={(e) =>
                     setEditingItem({
                       ...editingItem,
-                      data: { ...editingItem.data, dueDate: e.target.value },
+                      data: { ...editingItem.data, limitDate: e.target.value },
                     })
                   }
                   className="col-span-3"
@@ -1869,11 +1850,11 @@ export default function CreateBusinessCase() {
                 <div className="col-span-3">
                   <input
                     type="checkbox"
-                    checked={editingItem.data.actualValue}
+                    checked={editingItem.data.estimatedActual}
                     onChange={(e) =>
                       setEditingItem({
                         ...editingItem,
-                        data: { ...editingItem.data, actualValue: e.target.checked },
+                        data: { ...editingItem.data, estimatedActual: e.target.checked },
                       })
                     }
                     className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -1959,11 +1940,11 @@ export default function CreateBusinessCase() {
                 <div className="col-span-3">
                   <input
                     type="checkbox"
-                    checked={editingItem.data.actualValue}
+                    checked={editingItem.data.estimatedActual}
                     onChange={(e) =>
                       setEditingItem({
                         ...editingItem,
-                        data: { ...editingItem.data, actualValue: e.target.checked },
+                        data: { ...editingItem.data, estimatedActual: e.target.checked },
                       })
                     }
                     className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -2005,20 +1986,20 @@ export default function CreateBusinessCase() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="impact" className="text-right text-sm font-medium">
+                <label htmlFor="impactLevel" className="text-right text-sm font-medium">
                   Impact
                 </label>
                 <Select
-                  value={editingItem.data.impact}
+                  value={editingItem.data.impactLevel}
                   onValueChange={(value) =>
                     setEditingItem({
                       ...editingItem,
-                      data: { ...editingItem.data, impact: value },
+                      data: { ...editingItem.data, impactLevel: value },
                     })
                   }
                 >
                   <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select impact" />
+                    <SelectValue placeholder="Select impactLevel" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Low">Low</SelectItem>
@@ -2084,5 +2065,5 @@ export default function CreateBusinessCase() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
