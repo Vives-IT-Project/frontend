@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import logo from "../../assets/logo.svg";
 import { UserProfileMenu } from "../components/user-profile-menu";
-import { ClipboardList, LayoutDashboard, Settings } from "lucide-react";
+import { ClipboardList, LayoutDashboard, Settings, FileCheck } from "lucide-react";
 import { pageTitles } from "@/lib/page-titles";
+
 
 type MenuItemProps = {
   label: string;
@@ -58,6 +59,12 @@ const BaseLayout = () => {
             icon={<ClipboardList />}
             collapsed={isCollapsed}
             to="/business-cases"
+          />
+          <MenuItem
+            label="Audit"
+            icon={<FileCheck />}
+            collapsed={isCollapsed}
+            to="/audit"
           />
           <MenuItem
             label="Settings"
