@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import logo from "../../assets/logo.svg";
 import { UserProfileMenu } from "../components/user-profile-menu";
-import { ClipboardList, LayoutDashboard, Settings } from "lucide-react";
+import { ClipboardList, LayoutDashboard, Settings, FileCheck } from "lucide-react";
+import { pageTitles } from "@/lib/page-titles";
+
 
 type MenuItemProps = {
   label: string;
@@ -27,13 +29,18 @@ const MenuItem: React.FC<MenuItemProps> = ({ label, icon, collapsed, to }) => {
 
 const BaseLayout = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const location = useLocation();
+
+  const path = location.pathname;
+
+  const title = pageTitles[path] || "Application";
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       <aside
         className={`bg-indigo-950 text-white flex flex-col items-center transition-all duration-300 ${
           isCollapsed ? "w-16" : "w-52"
@@ -54,18 +61,35 @@ const BaseLayout = () => {
             to="/business-cases"
           />
           <MenuItem
+            label="Audit"
+            icon={<FileCheck />}
+            collapsed={isCollapsed}
+            to="/audit"
+          />
+          <MenuItem
             label="Settings"
             icon={<Settings />}
             collapsed={isCollapsed}
             to="/app-settings"
           />
+            <MenuItem
+            label="Complexity"
+            icon={<ClipboardList />}
+            collapsed={isCollapsed}
+            to="/complexity"
+          />
+          <MenuItem
+            label="BC Complexity" 
+            icon={<ClipboardList />}
+            collapsed={isCollapsed}
+            to="/business-case-complexity"/>
         </nav>
       </aside>
 
       <div className="flex flex-col flex-1">
         <header className="bg-gray-100 text-gray-900 pt-8 pl-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-semibold">Business Case</h1>
+            <h1 className="text-3xl font-semibold">{title}</h1>
             <span className="mr-10">
               <UserProfileMenu />
             </span>

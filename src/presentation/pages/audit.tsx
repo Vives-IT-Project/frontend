@@ -18,17 +18,718 @@ interface AuditData {
 
 // Liste des acteurs dans l'ordre
 const ACTORS = [
-  "Service Client",
-  "Manager Support",
-  "Équipe Qualité",
-  "Support Technique",
-  "Équipe Infrastructure",
-  "Manager IT",
-  "RH",
-  "Manager Formation",
-  "Équipe Technique",
-  "Consultant Externe"
+  "Customer Service",
+  "Support Manager",
+  "Quality Team",
+  "Technical Support",
+  "Infrastructure Team",
+  "IT Manager",
+  "HR",
+  "Training Manager",
+  "Technical Team",
+  "External Consultant"
 ];
+
+// Liste des business cases
+const BUSINESS_CASES = [
+  "Customer Service Optimization",
+  "Digital Transformation",
+  "Quality Improvement"
+];
+
+// Données mockées pour chaque business case
+const mockDataByBusinessCase: Record<string, AuditData[]> = {
+  "Customer Service Optimization": [
+    {
+      id: 1,
+      kpi: "Customer Satisfaction Rate",
+      notes: [
+        {
+          id: 1,
+          actor: "Customer Service",
+          status: "F",
+          description: "Customer satisfaction has significantly increased thanks to the new agent training. Customer feedback is very positive about service quality.",
+          date: "2024-03-20"
+        },
+        {
+          id: 2,
+          actor: "Support Manager",
+          status: "L",
+          description: "New agent training has been successfully completed. Metrics show notable improvement in response quality.",
+          date: "2024-03-19"
+        },
+        {
+          id: 3,
+          actor: "Quality Team",
+          status: "F",
+          description: "Quality audits show excellent compliance with service standards.",
+          date: "2024-03-18"
+        },
+        {
+          id: 4,
+          actor: "Technical Support",
+          status: "P",
+          description: "Technical support responds within deadlines but could improve response quality.",
+          date: "2024-03-20"
+        },
+        {
+          id: 5,
+          actor: "Infrastructure Team",
+          status: "L",
+          description: "Infrastructure supports current load well with some possible optimizations.",
+          date: "2024-03-20"
+        },
+        {
+          id: 6,
+          actor: "IT Manager",
+          status: "F",
+          description: "Efficient resource and priority management.",
+          date: "2024-03-20"
+        },
+        {
+          id: 7,
+          actor: "HR",
+          status: "L",
+          description: "Well-established recruitment and training processes.",
+          date: "2024-03-20"
+        },
+        {
+          id: 8,
+          actor: "Training Manager",
+          status: "F",
+          description: "Complete and effective training program.",
+          date: "2024-03-20"
+        },
+        {
+          id: 9,
+          actor: "Technical Team",
+          status: "P",
+          description: "Some technical training needs updating.",
+          date: "2024-03-20"
+        },
+        {
+          id: 10,
+          actor: "External Consultant",
+          status: "L",
+          description: "Bringing new perspectives and methodologies.",
+          date: "2024-03-20"
+        }
+      ]
+    },
+    {
+      id: 2,
+      kpi: "Average Response Time",
+      notes: [
+        {
+          id: 11,
+          actor: "Customer Service",
+          status: "L",
+          description: "Quick response to customer requests.",
+          date: "2024-03-20"
+        },
+        {
+          id: 12,
+          actor: "Support Manager",
+          status: "F",
+          description: "Effective response time supervision.",
+          date: "2024-03-20"
+        },
+        {
+          id: 13,
+          actor: "Quality Team",
+          status: "P",
+          description: "Some quality processes slow down responses.",
+          date: "2024-03-20"
+        },
+        {
+          id: 14,
+          actor: "Technical Support",
+          status: "P",
+          description: "Average response time is above the 1-hour target. Root cause analysis is ongoing.",
+          date: "2024-03-18"
+        },
+        {
+          id: 15,
+          actor: "Infrastructure Team",
+          status: "N",
+          description: "Recurring issues with the ticket system causing delays.",
+          date: "2024-03-17"
+        },
+        {
+          id: 16,
+          actor: "IT Manager",
+          status: "L",
+          description: "New ticket system being deployed to improve response times.",
+          date: "2024-03-16"
+        },
+        {
+          id: 17,
+          actor: "HR",
+          status: "F",
+          description: "Fast and efficient recruitment process.",
+          date: "2024-03-20"
+        },
+        {
+          id: 18,
+          actor: "Training Manager",
+          status: "L",
+          description: "Ongoing training to improve response times.",
+          date: "2024-03-20"
+        },
+        {
+          id: 19,
+          actor: "Technical Team",
+          status: "P",
+          description: "Some technical interventions take too long.",
+          date: "2024-03-20"
+        },
+        {
+          id: 20,
+          actor: "External Consultant",
+          status: "F",
+          description: "Effective recommendations to optimize response times.",
+          date: "2024-03-20"
+        }
+      ]
+    },
+    {
+      id: 3,
+      kpi: "First Contact Resolution Rate",
+      notes: [
+        {
+          id: 21,
+          actor: "Customer Service",
+          status: "F",
+          description: "Complete training on first contact resolution.",
+          date: "2024-03-20"
+        },
+        {
+          id: 22,
+          actor: "Support Manager",
+          status: "L",
+          description: "Implementation of new quick resolution procedures.",
+          date: "2024-03-20"
+        },
+        {
+          id: 23,
+          actor: "Quality Team",
+          status: "F",
+          description: "Quality audit of first contact resolutions.",
+          date: "2024-03-20"
+        },
+        {
+          id: 24,
+          actor: "Technical Support",
+          status: "P",
+          description: "Technical training in progress to improve quick resolution.",
+          date: "2024-03-20"
+        },
+        {
+          id: 25,
+          actor: "Infrastructure Team",
+          status: "L",
+          description: "Support tools optimized for quick resolution.",
+          date: "2024-03-20"
+        },
+        {
+          id: 26,
+          actor: "IT Manager",
+          status: "F",
+          description: "Efficient resource management for quick support.",
+          date: "2024-03-20"
+        },
+        {
+          id: 27,
+          actor: "HR",
+          status: "F",
+          description: "Recruitment of agents specialized in quick resolution.",
+          date: "2024-03-20"
+        },
+        {
+          id: 28,
+          actor: "Training Manager",
+          status: "F",
+          description: "Complete training program on quick resolution.",
+          date: "2024-03-19"
+        },
+        {
+          id: 29,
+          actor: "Technical Team",
+          status: "L",
+          description: "Technical training for quick resolution.",
+          date: "2024-03-18"
+        },
+        {
+          id: 30,
+          actor: "External Consultant",
+          status: "P",
+          description: "Analysis of best practices for quick resolution.",
+          date: "2024-03-17"
+        }
+      ]
+    }
+  ],
+  "Digital Transformation": [
+    {
+      id: 1,
+      kpi: "New Tools Adoption Rate",
+      notes: [
+        {
+          id: 31,
+          actor: "Customer Service",
+          status: "P",
+          description: "Customers are gradually adapting to new digital tools.",
+          date: "2024-03-20"
+        },
+        {
+          id: 32,
+          actor: "Support Manager",
+          status: "L",
+          description: "Training in progress on new digital tools.",
+          date: "2024-03-19"
+        },
+        {
+          id: 33,
+          actor: "Quality Team",
+          status: "P",
+          description: "Evaluation of new digital processes in progress.",
+          date: "2024-03-18"
+        },
+        {
+          id: 34,
+          actor: "Technical Support",
+          status: "F",
+          description: "Technical support well prepared for digital transformation.",
+          date: "2024-03-20"
+        },
+        {
+          id: 35,
+          actor: "Infrastructure Team",
+          status: "F",
+          description: "Cloud infrastructure well in place.",
+          date: "2024-03-20"
+        },
+        {
+          id: 36,
+          actor: "IT Manager",
+          status: "L",
+          description: "Digital transformation management in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 37,
+          actor: "HR",
+          status: "P",
+          description: "Recruitment of new digital talents in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 38,
+          actor: "Training Manager",
+          status: "L",
+          description: "Digital training deployment in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 39,
+          actor: "Technical Team",
+          status: "F",
+          description: "Technical team well trained in new technologies.",
+          date: "2024-03-20"
+        },
+        {
+          id: 40,
+          actor: "External Consultant",
+          status: "L",
+          description: "Digital transformation support.",
+          date: "2024-03-20"
+        }
+      ]
+    },
+    {
+      id: 2,
+      kpi: "Operational Cost Reduction",
+      notes: [
+        {
+          id: 41,
+          actor: "Customer Service",
+          status: "F",
+          description: "Efficient automated response through new tools.",
+          date: "2024-03-20"
+        },
+        {
+          id: 42,
+          actor: "Support Manager",
+          status: "L",
+          description: "Supervision of new automated response tools.",
+          date: "2024-03-20"
+        },
+        {
+          id: 43,
+          actor: "Quality Team",
+          status: "P",
+          description: "Adapting quality processes to digital tools.",
+          date: "2024-03-20"
+        },
+        {
+          id: 44,
+          actor: "Technical Support",
+          status: "F",
+          description: "Technical support optimized by new tools.",
+          date: "2024-03-18"
+        },
+        {
+          id: 45,
+          actor: "Infrastructure Team",
+          status: "L",
+          description: "Cloud infrastructure optimization in progress.",
+          date: "2024-03-17"
+        },
+        {
+          id: 46,
+          actor: "IT Manager",
+          status: "F",
+          description: "Efficient management of new digital tools.",
+          date: "2024-03-16"
+        },
+        {
+          id: 47,
+          actor: "HR",
+          status: "P",
+          description: "Recruitment of digital specialists in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 48,
+          actor: "Training Manager",
+          status: "L",
+          description: "Training on new tools in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 49,
+          actor: "Technical Team",
+          status: "F",
+          description: "Mastery of new technical tools.",
+          date: "2024-03-20"
+        },
+        {
+          id: 50,
+          actor: "External Consultant",
+          status: "L",
+          description: "Digital process optimization.",
+          date: "2024-03-20"
+        }
+      ]
+    },
+    {
+      id: 3,
+      kpi: "Cloud Migration Rate",
+      notes: [
+        {
+          id: 51,
+          actor: "Customer Service",
+          status: "L",
+          description: "Customer tools migration to cloud in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 52,
+          actor: "Support Manager",
+          status: "P",
+          description: "Adapting support processes to cloud.",
+          date: "2024-03-20"
+        },
+        {
+          id: 53,
+          actor: "Quality Team",
+          status: "L",
+          description: "Setting up cloud quality controls.",
+          date: "2024-03-20"
+        },
+        {
+          id: 54,
+          actor: "Technical Support",
+          status: "F",
+          description: "Cloud technical support operational.",
+          date: "2024-03-20"
+        },
+        {
+          id: 55,
+          actor: "Infrastructure Team",
+          status: "F",
+          description: "Cloud infrastructure fully deployed.",
+          date: "2024-03-20"
+        },
+        {
+          id: 56,
+          actor: "IT Manager",
+          status: "L",
+          description: "Cloud migration management in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 57,
+          actor: "HR",
+          status: "P",
+          description: "Recruitment of cloud experts in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 58,
+          actor: "Training Manager",
+          status: "F",
+          description: "Complete cloud training deployed.",
+          date: "2024-03-19"
+        },
+        {
+          id: 59,
+          actor: "Technical Team",
+          status: "F",
+          description: "Technical team trained in cloud.",
+          date: "2024-03-18"
+        },
+        {
+          id: 60,
+          actor: "External Consultant",
+          status: "L",
+          description: "Cloud migration support.",
+          date: "2024-03-17"
+        }
+      ]
+    }
+  ],
+  "Quality Improvement": [
+    {
+      id: 1,
+      kpi: "Standards Compliance Rate",
+      notes: [
+        {
+          id: 61,
+          actor: "Customer Service",
+          status: "L",
+          description: "Continuous improvement of service quality.",
+          date: "2024-03-20"
+        },
+        {
+          id: 62,
+          actor: "Support Manager",
+          status: "F",
+          description: "Effective quality supervision.",
+          date: "2024-03-19"
+        },
+        {
+          id: 63,
+          actor: "Quality Team",
+          status: "F",
+          description: "Well-established quality processes.",
+          date: "2024-03-18"
+        },
+        {
+          id: 64,
+          actor: "Technical Support",
+          status: "L",
+          description: "Quality technical support.",
+          date: "2024-03-20"
+        },
+        {
+          id: 65,
+          actor: "Infrastructure Team",
+          status: "P",
+          description: "Infrastructure improvement in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 66,
+          actor: "IT Manager",
+          status: "L",
+          description: "IT quality management in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 67,
+          actor: "HR",
+          status: "F",
+          description: "Effective quality recruitment.",
+          date: "2024-03-20"
+        },
+        {
+          id: 68,
+          actor: "Training Manager",
+          status: "L",
+          description: "Quality training in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 69,
+          actor: "Technical Team",
+          status: "P",
+          description: "Technical quality training in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 70,
+          actor: "External Consultant",
+          status: "L",
+          description: "Quality audit in progress.",
+          date: "2024-03-20"
+        }
+      ]
+    },
+    {
+      id: 2,
+      kpi: "Critical Error Reduction",
+      notes: [
+        {
+          id: 71,
+          actor: "Customer Service",
+          status: "F",
+          description: "Quick and quality response.",
+          date: "2024-03-20"
+        },
+        {
+          id: 72,
+          actor: "Support Manager",
+          status: "L",
+          description: "Quality response supervision.",
+          date: "2024-03-20"
+        },
+        {
+          id: 73,
+          actor: "Quality Team",
+          status: "F",
+          description: "Quality response control.",
+          date: "2024-03-20"
+        },
+        {
+          id: 74,
+          actor: "Technical Support",
+          status: "L",
+          description: "Quality technical support.",
+          date: "2024-03-18"
+        },
+        {
+          id: 75,
+          actor: "Infrastructure Team",
+          status: "P",
+          description: "Infrastructure optimization in progress.",
+          date: "2024-03-17"
+        },
+        {
+          id: 76,
+          actor: "IT Manager",
+          status: "L",
+          description: "IT quality management in progress.",
+          date: "2024-03-16"
+        },
+        {
+          id: 77,
+          actor: "HR",
+          status: "F",
+          description: "Quality recruitment in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 78,
+          actor: "Training Manager",
+          status: "L",
+          description: "Quality training in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 79,
+          actor: "Technical Team",
+          status: "P",
+          description: "Technical quality training in progress.",
+          date: "2024-03-20"
+        },
+        {
+          id: 80,
+          actor: "External Consultant",
+          status: "L",
+          description: "Quality audit in progress.",
+          date: "2024-03-20"
+        }
+      ]
+    },
+    {
+      id: 3,
+      kpi: "ISO Certification Rate",
+      notes: [
+        {
+          id: 81,
+          actor: "Customer Service",
+          status: "F",
+          description: "Customer processes compliant with ISO standards.",
+          date: "2024-03-20"
+        },
+        {
+          id: 82,
+          actor: "Support Manager",
+          status: "L",
+          description: "Quality management compliant with ISO standards.",
+          date: "2024-03-20"
+        },
+        {
+          id: 83,
+          actor: "Quality Team",
+          status: "F",
+          description: "Quality controls compliant with ISO standards.",
+          date: "2024-03-20"
+        },
+        {
+          id: 84,
+          actor: "Technical Support",
+          status: "L",
+          description: "Technical processes under ISO certification.",
+          date: "2024-03-20"
+        },
+        {
+          id: 85,
+          actor: "Infrastructure Team",
+          status: "P",
+          description: "Infrastructure under ISO certification.",
+          date: "2024-03-20"
+        },
+        {
+          id: 86,
+          actor: "IT Manager",
+          status: "L",
+          description: "IT management under ISO certification.",
+          date: "2024-03-20"
+        },
+        {
+          id: 87,
+          actor: "HR",
+          status: "F",
+          description: "HR processes ISO certified.",
+          date: "2024-03-20"
+        },
+        {
+          id: 88,
+          actor: "Training Manager",
+          status: "F",
+          description: "Training program ISO certified.",
+          date: "2024-03-19"
+        },
+        {
+          id: 89,
+          actor: "Technical Team",
+          status: "L",
+          description: "Technical processes under ISO certification.",
+          date: "2024-03-18"
+        },
+        {
+          id: 90,
+          actor: "External Consultant",
+          status: "P",
+          description: "ISO audit in progress.",
+          date: "2024-03-17"
+        }
+      ]
+    }
+  ]
+};
 
 // Fonction pour calculer la moyenne des statuts
 const calculateAverageStatus = (notes: Note[]): NoteStatus => {
@@ -46,237 +747,6 @@ const calculateAverageStatus = (notes: Note[]): NoteStatus => {
   if (average < 2.5) return 'L';
   return 'F';
 };
-
-const mockData: AuditData[] = [
-  {
-    id: 1,
-    kpi: "Taux de satisfaction client",
-    notes: [
-      {
-        id: 1,
-        actor: "Service Client",
-        status: "F",
-        description: "Le taux de satisfaction client a augmenté significativement grâce à la nouvelle formation des agents. Les retours clients sont très positifs sur la qualité du service.",
-        date: "2024-03-20"
-      },
-      {
-        id: 2,
-        actor: "Manager Support",
-        status: "L",
-        description: "La formation des nouveaux agents a été complétée avec succès. Les métriques montrent une amélioration notable dans la qualité des réponses.",
-        date: "2024-03-19"
-      },
-      {
-        id: 3,
-        actor: "Équipe Qualité",
-        status: "F",
-        description: "Les audits qualité montrent une excellente conformité aux standards de service.",
-        date: "2024-03-18"
-      },
-      {
-        id: 4,
-        actor: "Support Technique",
-        status: "P",
-        description: "Le support technique répond dans les délais mais pourrait améliorer la qualité des réponses.",
-        date: "2024-03-20"
-      },
-      {
-        id: 5,
-        actor: "Équipe Infrastructure",
-        status: "L",
-        description: "L'infrastructure supporte bien la charge actuelle avec quelques optimisations possibles.",
-        date: "2024-03-20"
-      },
-      {
-        id: 6,
-        actor: "Manager IT",
-        status: "F",
-        description: "Gestion efficace des ressources et des priorités.",
-        date: "2024-03-20"
-      },
-      {
-        id: 7,
-        actor: "RH",
-        status: "L",
-        description: "Processus de recrutement et formation bien établis.",
-        date: "2024-03-20"
-      },
-      {
-        id: 8,
-        actor: "Manager Formation",
-        status: "F",
-        description: "Programme de formation complet et efficace.",
-        date: "2024-03-20"
-      },
-      {
-        id: 9,
-        actor: "Équipe Technique",
-        status: "P",
-        description: "Certaines formations techniques nécessitent une mise à jour.",
-        date: "2024-03-20"
-      },
-      {
-        id: 10,
-        actor: "Consultant Externe",
-        status: "L",
-        description: "Apport de nouvelles perspectives et méthodologies.",
-        date: "2024-03-20"
-      }
-    ]
-  },
-  {
-    id: 2,
-    kpi: "Temps de réponse",
-    notes: [
-      {
-        id: 11,
-        actor: "Service Client",
-        status: "L",
-        description: "Réponse rapide aux demandes clients.",
-        date: "2024-03-20"
-      },
-      {
-        id: 12,
-        actor: "Manager Support",
-        status: "F",
-        description: "Supervision efficace des temps de réponse.",
-        date: "2024-03-20"
-      },
-      {
-        id: 13,
-        actor: "Équipe Qualité",
-        status: "P",
-        description: "Certains processus de qualité ralentissent les réponses.",
-        date: "2024-03-20"
-      },
-      {
-        id: 14,
-        actor: "Support Technique",
-        status: "P",
-        description: "Le temps de réponse moyen est supérieur à l'objectif de 1h. Une analyse des causes racines est en cours.",
-        date: "2024-03-18"
-      },
-      {
-        id: 15,
-        actor: "Équipe Infrastructure",
-        status: "N",
-        description: "Problèmes récurrents avec le système de tickets causant des retards.",
-        date: "2024-03-17"
-      },
-      {
-        id: 16,
-        actor: "Manager IT",
-        status: "L",
-        description: "Nouveau système de tickets en cours de déploiement pour améliorer les temps de réponse.",
-        date: "2024-03-16"
-      },
-      {
-        id: 17,
-        actor: "RH",
-        status: "F",
-        description: "Processus de recrutement rapide et efficace.",
-        date: "2024-03-20"
-      },
-      {
-        id: 18,
-        actor: "Manager Formation",
-        status: "L",
-        description: "Formation continue pour améliorer les temps de réponse.",
-        date: "2024-03-20"
-      },
-      {
-        id: 19,
-        actor: "Équipe Technique",
-        status: "P",
-        description: "Certaines interventions techniques prennent trop de temps.",
-        date: "2024-03-20"
-      },
-      {
-        id: 20,
-        actor: "Consultant Externe",
-        status: "F",
-        description: "Recommandations efficaces pour optimiser les temps de réponse.",
-        date: "2024-03-20"
-      }
-    ]
-  },
-  {
-    id: 3,
-    kpi: "Formation des employés",
-    notes: [
-      {
-        id: 21,
-        actor: "Service Client",
-        status: "F",
-        description: "Formation client complète et efficace.",
-        date: "2024-03-20"
-      },
-      {
-        id: 22,
-        actor: "Manager Support",
-        status: "L",
-        description: "Formation des managers bien structurée.",
-        date: "2024-03-20"
-      },
-      {
-        id: 23,
-        actor: "Équipe Qualité",
-        status: "F",
-        description: "Formation qualité complète et à jour.",
-        date: "2024-03-20"
-      },
-      {
-        id: 24,
-        actor: "Support Technique",
-        status: "P",
-        description: "Formation technique en cours de mise à jour.",
-        date: "2024-03-20"
-      },
-      {
-        id: 25,
-        actor: "Équipe Infrastructure",
-        status: "L",
-        description: "Formation infrastructure bien adaptée aux besoins.",
-        date: "2024-03-20"
-      },
-      {
-        id: 26,
-        actor: "Manager IT",
-        status: "F",
-        description: "Formation management IT complète.",
-        date: "2024-03-20"
-      },
-      {
-        id: 27,
-        actor: "RH",
-        status: "F",
-        description: "100% des employés ont complété leur formation obligatoire.",
-        date: "2024-03-20"
-      },
-      {
-        id: 28,
-        actor: "Manager Formation",
-        status: "F",
-        description: "Tous les modules de formation ont été mis à jour et validés.",
-        date: "2024-03-19"
-      },
-      {
-        id: 29,
-        actor: "Équipe Technique",
-        status: "L",
-        description: "Formation technique en cours pour les nouvelles technologies.",
-        date: "2024-03-18"
-      },
-      {
-        id: 30,
-        actor: "Consultant Externe",
-        status: "P",
-        description: "Certains modules nécessitent une mise à jour pour refléter les dernières pratiques.",
-        date: "2024-03-17"
-      }
-    ]
-  }
-];
 
 const getStatusColor = (status: NoteStatus) => {
   switch (status) {
@@ -299,6 +769,21 @@ const getStatusLabel = (status: NoteStatus) => {
 const AuditPage: React.FC = () => {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [searchDate, setSearchDate] = useState<string>('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedNote, setEditedNote] = useState<Note | null>(null);
+  const [selectedBusinessCase, setSelectedBusinessCase] = useState<string>(BUSINESS_CASES[0]);
+  const [businessCaseData, setBusinessCaseData] = useState<Record<string, AuditData[]>>(mockDataByBusinessCase);
+
+  // Mettre à jour les données quand le business case change
+  useEffect(() => {
+    // On ne réinitialise plus les données, on utilise celles déjà modifiées
+    if (!businessCaseData[selectedBusinessCase]) {
+      setBusinessCaseData(prev => ({
+        ...prev,
+        [selectedBusinessCase]: mockDataByBusinessCase[selectedBusinessCase]
+      }));
+    }
+  }, [selectedBusinessCase]);
 
   useEffect(() => {
     const preventDefault = (e: TouchEvent) => {
@@ -320,20 +805,70 @@ const AuditPage: React.FC = () => {
     };
   }, []);
 
-  const filteredData = mockData.filter(item => 
+  const handleEdit = () => {
+    setIsEditing(true);
+    setEditedNote(selectedNote);
+  };
+
+  const handleSave = () => {
+    if (editedNote) {
+      const updatedData = businessCaseData[selectedBusinessCase].map(item => ({
+        ...item,
+        notes: item.notes.map(note => 
+          note.id === editedNote.id ? editedNote : note
+        )
+      }));
+
+      setBusinessCaseData(prev => ({
+        ...prev,
+        [selectedBusinessCase]: updatedData
+      }));
+      
+      setSelectedNote(editedNote);
+      setIsEditing(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditedNote(null);
+  };
+
+  const filteredData = businessCaseData[selectedBusinessCase]?.filter(item => 
     searchDate === '' || 
     item.notes.some(note => note.date === searchDate)
-  );
+  ) || [];
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Page d'Audit</h1>
+      <h1 className="text-3xl font-bold mb-6">Audit Page</h1>
       
-      {/* Barre de recherche par date */}
+      {/* Business case selection */}
+      <div className="mb-6 bg-white rounded-lg shadow p-4">
+        <div className="flex items-center gap-4">
+          <label htmlFor="businessCase" className="text-sm font-medium text-gray-700">
+            Business Case:
+          </label>
+          <select
+            id="businessCase"
+            value={selectedBusinessCase}
+            onChange={(e) => setSelectedBusinessCase(e.target.value)}
+            className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          >
+            {BUSINESS_CASES.map((bc) => (
+              <option key={bc} value={bc}>
+                {bc}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Date search bar */}
       <div className="mb-6 bg-white rounded-lg shadow p-4">
         <div className="flex items-center gap-4">
           <label htmlFor="dateSearch" className="text-sm font-medium text-gray-700">
-            Filtrer par date :
+            Filter by date:
           </label>
           <input
             type="date"
@@ -347,7 +882,7 @@ const AuditPage: React.FC = () => {
               onClick={() => setSearchDate('')}
               className="text-sm text-gray-500 hover:text-gray-700"
             >
-              Effacer le filtre
+              Clear filter
             </button>
           )}
         </div>
@@ -416,7 +951,7 @@ const AuditPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal pour afficher la description */}
+      {/* Modal for displaying description */}
       {selectedNote && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full shadow-xl">
@@ -427,23 +962,74 @@ const AuditPage: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold">{selectedNote.actor}</h3>
                 <div className="mt-1 flex items-center">
-                  <span className={`px-3 py-1.5 rounded text-base font-medium ${getStatusColor(selectedNote.status)}`}>
-                    {selectedNote.status}
-                  </span>
+                  {isEditing ? (
+                    <select
+                      value={editedNote?.status}
+                      onChange={(e) => setEditedNote(prev => prev ? {...prev, status: e.target.value as NoteStatus} : null)}
+                      className="px-3 py-1.5 rounded text-base font-medium border border-gray-300"
+                    >
+                      <option value="N">Not Done</option>
+                      <option value="P">Partially</option>
+                      <option value="L">Largely</option>
+                      <option value="F">Fully</option>
+                    </select>
+                  ) : (
+                    <span className={`px-3 py-1.5 rounded text-base font-medium ${getStatusColor(selectedNote.status)}`}>
+                      {selectedNote.status}
+                    </span>
+                  )}
                 </div>
               </div>
               <button
-                onClick={() => setSelectedNote(null)}
+                onClick={() => {
+                  setSelectedNote(null);
+                  setIsEditing(false);
+                  setEditedNote(null);
+                }}
                 className="text-gray-500 hover:text-gray-700"
               >
                 ✕
               </button>
             </div>
             <div className="mt-4">
-              <h4 className="font-medium text-gray-700 mb-2">Description détaillée:</h4>
-              <div className="text-gray-600">
-                {selectedNote.description}
-              </div>
+              <h4 className="font-medium text-gray-700 mb-2">Detailed description:</h4>
+              {isEditing ? (
+                <textarea
+                  value={editedNote?.description}
+                  onChange={(e) => setEditedNote(prev => prev ? {...prev, description: e.target.value} : null)}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  rows={4}
+                />
+              ) : (
+                <div className="text-gray-600">
+                  {selectedNote.description}
+                </div>
+              )}
+            </div>
+            <div className="mt-6 flex justify-end gap-4">
+              {isEditing ? (
+                <>
+                  <button
+                    onClick={handleCancel}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                  >
+                    Save
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={handleEdit}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                >
+                  Edit
+                </button>
+              )}
             </div>
           </div>
         </div>
